@@ -1,13 +1,5 @@
 import React, { Component, PropTypes } from 'react'
-import update from 'immutability-helper'
-
-update.extend('$unset', (keysToRemove, original) => {
-  let copy = Object.assign({}, original)
-  for (const key of keysToRemove) {
-    delete copy[key]
-  }
-  return copy
-})
+import { update } from '../utils'
 
 export default class Form extends Component {
 
