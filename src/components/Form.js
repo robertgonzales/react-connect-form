@@ -62,11 +62,13 @@ export default class Form extends Component {
       return update(prevState, {
         fields: { $merge: {
           [name]: {
-            errors: [],
             value: null,
+            errors: [],
             touched: false,
             focused: false,
             pristine: true,
+            validated: true,
+            validating: false,
           }
         }}
       })
@@ -93,10 +95,17 @@ export default class Form extends Component {
         fields: {
           [name]: { $merge: {
             value: value,
-            pristine: false
+            touched: true,
+            validated: value === prevState.fields[name].value,
+            // TODO: handle initialValues and defaultValues
+            pristine: !!(this.props.initialValues && this.props.initialValues[name] === value)
           }}
         }
       })
+      // TODO: merge synchronous validation changes
+      if (this.state.fields[name].errors.length) {
+        this.validateField(name, value)
+      }
     })
   }
 
@@ -126,35 +135,51 @@ export default class Form extends Component {
     this.validateField(name, this.state.fields[name].value)
   }
 
-  validateField = (name, value) => {
-    //  TODO: shouldFieldValidate()
-    // TODO: how should user build async errors? Promise.reject/resolve()
-    const { syncErrors, asyncErrors } = this.runFieldValidations(name, value)
-    const isAsync = asyncErrors.length > 0
+  // TODO: better name (also unwarns field)
+  warnField = (name, errors, validating) => {
+    errors = errors.filter(err => err).map(err => err.message || err)
     this.setState(prevState => {
       return update(prevState, {
         fields: {
           [name]: { $merge: {
-            errors: syncErrors.filter(e => e).map(e => e.message || e)
+            errors: errors,
+            validating: validating,
+            validated: !errors.length && !validating,
           }}
         }
       })
     })
-    if (isAsync) {
-      Promise.all(asyncErrors.map(p => p.catch(e => e)))
-        .then(errors => {
-          console.log(errors)
-          this.setState(prevState => {
-             return update(prevState, {
-               fields: {
-                 [name]: { $merge: {
-                   errors: [...errors, ...prevState.fields[name].errors].filter(e => e).map(e => e.message || e)
-                 }}
-               }
-             })
-           })
-        })
+  }
+
+  // TODO: merge blur/change updates into sync updates
+  validateField = (name, value) => {
+    if (!this.shouldFieldValidate(name, value)) {
+      return
     }
+    //  TODO: shouldFieldValidate()
+    // TODO: how should user build async errors? Promise.reject/resolve()
+    const { syncErrors, asyncErrors } = this.runFieldValidations(name, value)
+    const isAsync = asyncErrors.length > 0
+    this.warnField(name, syncErrors, isAsync)
+    if (isAsync) {
+      // update field for first error when there are multiple async errors.
+      if (asyncErrors.length > 1) {
+        // wait for first error to resolve.
+        Promise.race(asyncErrors.map(p => p.catch(e => e)))
+          // update field after first error resolves.
+          .then(error => this.warnField(name, [...error, ...syncErrors], true))
+      }
+      // wait for all errors to resolve.
+      Promise.all(asyncErrors.map(p => p.catch(e => e)))
+        .then(errors => this.warnField(name, [...errors, ...syncErrors], false))
+    }
+  }
+
+  shouldFieldValidate = (name, nextValue) => {
+    const { value, validated } = this.state.fields[name]
+    if (validated)
+      return false
+    return true
   }
 
   runFieldValidations = (name, value) => {
