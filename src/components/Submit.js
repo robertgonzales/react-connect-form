@@ -5,16 +5,16 @@ export default class Submit extends Component {
   static displayName = 'Submit'
 
   static contextTypes = {
-    form: PropTypes.object.isRequired
+    _form: PropTypes.object.isRequired
   }
 
   constructor(props, context) {
     super(props, context)
-    if (!context.form) throw new Error('Submit must be inside Form')
+    if (!context._form) throw new Error('Submit must be inside Form')
   }
 
   handleClick = (e) => {
-    this.context.form.submit(e)
+    this.context._form.submit(e)
   }
 
   render() {

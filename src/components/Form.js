@@ -1,4 +1,13 @@
 import React, { Component, PropTypes } from 'react'
+import update from 'immutability-helper'
+
+update.extend('$unset', (keysToRemove, original) => {
+  let copy = Object.assign({}, original)
+  for (const key of keysToRemove) {
+    delete copy[key]
+  }
+  return copy
+})
 
 export default class Form extends Component {
 
@@ -9,8 +18,7 @@ export default class Form extends Component {
   }
 
   static childContextTypes = {
-    // TODO: custom name to avoid conflicts?
-    form: PropTypes.object.isRequired
+    _form: PropTypes.object.isRequired
   }
 
   state = {
@@ -19,7 +27,8 @@ export default class Form extends Component {
 
   getChildContext() {
     return {
-      form: {
+      _form: {
+        changeField: this.changeField,
         registerField: this.registerField,
         unregisterField: this.unregisterField
       }
@@ -28,23 +37,37 @@ export default class Form extends Component {
 
   registerField = (name) => {
     this.setState(prevState => {
-      return {
-        fields: {
+      return update(prevState, {
+        fields: { $merge: {
           [name]: {
             value: null,
             touched: false,
             pristine: true
           }
-        }
-      }
+        }}
+      })
     })
   }
 
   unregisterField = (name) => {
     this.setState(prevState => {
-      // TODO: don't mutate
-      delete prevState.fields[name]
-      return prevState
+      return update(prevState, {
+        fields: { $unset: [name] }
+      })
+    })
+  }
+
+  changeField = (name, value) => {
+    this.setState(prevState => {
+      return update(prevState, {
+        fields: {
+          [name]: { $merge: {
+            value: value,
+            touched: true,
+            pristine: false
+          }}
+        }
+      })
     })
   }
 
