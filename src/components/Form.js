@@ -38,6 +38,31 @@ export default class Form extends Component {
     }
   }
 
+  get values() {
+     return Object.keys(this.state.fields).reduce((values, name) => {
+       if (!this.state.fields[name].value) return values
+       return { ...values, [name]: this.state.fields[name].value }
+     }, {})
+   }
+
+   get pristine() {
+     return Object.keys(this.state.fields).reduce((pristine, name) => {
+       return pristine ? this.state.fields[name].pristine : false
+     }, true)
+   }
+
+   get touched() {
+     return Object.keys(this.state.fields).reduce((touched, name) => {
+       return touched ? true : this.state.fields[name].touched
+     }, false)
+   }
+
+   get focused() {
+     return Object.keys(this.state.fields).reduce((focused, name) => {
+       return focused ? focused : this.state.fields[name].focused ? name : null
+     }, null)
+   }
+
   registerField = (name) => {
     this.setState(prevState => {
       return update(prevState, {
@@ -117,7 +142,11 @@ export default class Form extends Component {
         <pre>
           <code>
             {JSON.stringify({
+              "touched": this.touched,
+              "pristine": this.pristine,
+              "focused": this.focused,
               "fields": this.state.fields,
+              "values": this.values,
             }, null, 2)}
           </code>
         </pre>
