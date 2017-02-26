@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react'
-import { update, getInitialValue } from '../utils'
+import { update, cancelPromise, reflectPromise, getInitialValue } from '../utils'
 
 export default class Form extends Component {
 
@@ -9,12 +9,19 @@ export default class Form extends Component {
     onSubmit: PropTypes.func
   }
 
+  static defaultProps = {
+    onSubmit: (arg) => console.log("onSubmit", arg),
+    onSubmitSuccess: (arg) => console.log("onSubmitSuccess", arg),
+    onSubmitFailure: (arg) => console.log("onSubmitFailure", arg),
+  }
+
   static childContextTypes = {
     _form: PropTypes.object.isRequired
   }
 
   state = {
-    fields: {}
+    fields: {},
+    submitting: false,
   }
 
   validators = {}
@@ -37,6 +44,18 @@ export default class Form extends Component {
         reset: this.reset,
       }
     }
+  }
+
+  componentDidMount() {
+    this._isUnmounted = false
+  }
+
+  componentWillUnmount() {
+    this._isUnmounted = true
+  }
+
+  cancelOnUnmount = (promise) => {
+    return cancelPromise(promise, this._isUnmounted)
   }
 
   get values() {
@@ -73,7 +92,7 @@ export default class Form extends Component {
 
   get valid() {
     return Object.keys(this.state.fields).reduce((valid, name) => {
-      return valid ? !!this.state.fields[name].error : false
+      return valid ? !this.state.fields[name].errors.length : false
     }, true)
   }
 
@@ -192,41 +211,59 @@ export default class Form extends Component {
   // TODO: better name (also unwarns field)
   warnField = (name, errors, validating) => {
     errors = errors.filter(err => err).map(err => err.message || err)
-    this.setState(prevState => {
-      return update(prevState, {
-        fields: {
-          [name]: { $merge: {
-            errors: errors,
-            validating: validating,
-            validated: !errors.length && !validating,
-          }}
-        }
-      })
+    return new Promise(resolve => {
+      this.setState(prevState => {
+        return update(prevState, {
+          fields: {
+            [name]: { $merge: {
+              errors: errors,
+              validating: validating,
+              validated: !errors.length && !validating,
+            }}
+          }
+        })
+      }, resolve)
     })
   }
 
   // TODO: merge blur/change updates into sync updates
   validateField = (name, value) => {
     if (!this.shouldFieldValidate(name, value)) {
-      return
+      return Promise.resolve()
     }
-    //  TODO: shouldFieldValidate()
     // TODO: how should user build async errors? Promise.reject/resolve()
     const { syncErrors, asyncErrors } = this.runFieldValidations(name, value)
     const isAsync = asyncErrors.length > 0
-    this.warnField(name, syncErrors, isAsync)
-    if (isAsync) {
-      // update field for first error when there are multiple async errors.
-      if (asyncErrors.length > 1) {
-        // wait for first error to resolve.
-        Promise.race(asyncErrors.map(p => p.catch(e => e)))
-          // update field after first error resolves.
-          .then(error => this.warnField(name, [...error, ...syncErrors], true))
+    // return promise so form can ensure all field validations before submitting.
+    return new Promise((resolve, reject) => {
+      // update field immediately for synchronous errors.
+      Promise.resolve(this.warnField(name, syncErrors, isAsync))
+        // resolve validation after fields are updated AND no async errors.
+        .then(() => !isAsync && resolve())
+        // field wasn't updated because form unmounted.
+        .catch(reject)
+      if (isAsync) {
+        // treat each error as successful resolve so we can handle all of them.
+        const reflectErrors = asyncErrors.map(reflectPromise)
+        // update field for first error when there are multiple async errors.
+        if (asyncErrors.length > 1) {
+          // wait for first error to resolve.
+          // cancel if error resolves after unmount.
+          this.cancelOnUnmount(Promise.race(reflectErrors))
+            // update field after first error resolves.
+            .then(error => this.warnField(name, [...error, ...syncErrors], true))
+        }
+        // wait for all errors to resolve.
+        // cancel if errors resolve after unmount.
+        this.cancelOnUnmount(Promise.all(reflectErrors))
+          // update field after errors resolve.
+          .then(errors => this.warnField(name, [...errors, ...syncErrors], false))
+          // resolve validation after fields are updated.
+          .then(resolve)
+          // field wasn't updated because form unmounted.
+          .catch(reject)
       }
-      // wait for all errors to resolve.
-      Promise.all(asyncErrors.map(p => p.catch(e => e)))
-        .then(errors => this.warnField(name, [...errors, ...syncErrors], false))
-    }
+    })
   }
 
   shouldFieldValidate = (name, nextValue) => {
@@ -252,8 +289,71 @@ export default class Form extends Component {
     }, { syncErrors: [], asyncErrors: [] })
   }
 
+  validateForm = () => {
+    // resolve if ALL fields are valid.
+    // reject if ANY fields are invalid.
+    return Promise.all(
+      // run validation for every field.
+      Object.keys(this.state.fields).reduce((validations, name) => {
+        // each validation resolves when field was updated with latest error state.
+        // should only fail to resolve if form unmounts.
+        return [...validations, this.validateField(name, this.state.fields[name].value)]
+      }, [])
+    )
+  }
+
+  // form hooks
+
+  handleSubmit = (isValid) => {
+    const { onSubmit } = this.props
+    if (this.valid) {
+      return onSubmit && onSubmit(this.values)
+    } else {
+      return Promise.reject("Form is invalid")
+    }
+  }
+
+  handleSubmission = (submission) => {
+    const isAsync = submission && typeof submission.then === 'function'
+    if (isAsync) {
+      this.setState({
+        submitting: true,
+        submitSuccess: null,
+        submitFailure: null,
+      })
+    }
+    // force submission into promise.
+    return Promise.resolve(submission)
+  }
+
+  handleSubmitSuccess = () => {
+    this.setState({
+      submitting: false,
+      submitSuccess: true,
+      submitFailure: null,
+    }, () => {
+      this.props.onSubmitSuccess()
+    })
+  }
+
+  handleSubmitFailure = (err) => {
+    this.setState({
+      submitting: false,
+      submitSuccess: false,
+      submitFailure: err ? err.message || err : null
+    }, () => {
+      this.props.onSubmitFailure(err)
+    })
+  }
+
   submit = () => {
-    this.props.onSubmit(this.state.fields)
+    return Promise
+      // validate form before submitting.
+      .resolve(this.validateForm())
+      .then(this.handleSubmit)
+      .then(this.handleSubmission)
+      .then(this.handleSubmitSuccess)
+      .catch(this.handleSubmitFailure)
   }
 
   reset = () => {
