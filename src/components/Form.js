@@ -33,29 +33,42 @@ export default class Form extends Component {
   }
 
   get values() {
-     return Object.keys(this.state.fields).reduce((values, name) => {
-       if (!this.state.fields[name].value) return values
-       return { ...values, [name]: this.state.fields[name].value }
-     }, {})
-   }
+    return Object.keys(this.state.fields).reduce((values, name) => {
+      if (!this.state.fields[name].value) return values
+      return { ...values, [name]: this.state.fields[name].value }
+    }, {})
+  }
 
-   get pristine() {
-     return Object.keys(this.state.fields).reduce((pristine, name) => {
-       return pristine ? this.state.fields[name].pristine : false
-     }, true)
-   }
+  get pristine() {
+    return Object.keys(this.state.fields).reduce((pristine, name) => {
+      return pristine ? this.state.fields[name].pristine : false
+    }, true)
+  }
 
-   get touched() {
-     return Object.keys(this.state.fields).reduce((touched, name) => {
-       return touched ? true : this.state.fields[name].touched
-     }, false)
-   }
+  get touched() {
+    return Object.keys(this.state.fields).reduce((touched, name) => {
+      return touched ? true : this.state.fields[name].touched
+    }, false)
+  }
 
-   get focused() {
-     return Object.keys(this.state.fields).reduce((focused, name) => {
-       return focused ? focused : this.state.fields[name].focused ? name : null
-     }, null)
-   }
+  get focused() {
+    return Object.keys(this.state.fields).reduce((focused, name) => {
+      return focused ? focused : this.state.fields[name].focused ? name : null
+    }, null)
+  }
+
+  get errors() {
+    return Object.keys(this.state.fields).reduce((errors, name) => {
+      if (!this.state.fields[name].errors.length) return errors
+      return { ...errors, [name]: this.state.fields[name].errors }
+    }, {})
+  }
+
+  get valid() {
+    return Object.keys(this.state.fields).reduce((valid, name) => {
+      return valid ? !!this.state.fields[name].error : false
+    }, true)
+  }
 
   registerField = (name, validators) => {
     this.setState(prevState => {
@@ -212,9 +225,11 @@ export default class Form extends Component {
         <pre>
           <code>
             {JSON.stringify({
-              "touched": this.touched,
               "pristine": this.pristine,
+              "touched": this.touched,
               "focused": this.focused,
+              "errors": this.errors,
+              "valid": this.valid,
               "fields": this.state.fields,
               "values": this.values,
             }, null, 2)}
