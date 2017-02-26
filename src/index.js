@@ -1,13 +1,3 @@
-import React, { Component } from 'react'
-
-class HelloWorld extends Component {
-
-  render() {
-    return (
-      <h1>Hello, World</h1>
-    )
-  }
-  
-}
-
-export default HelloWorld
+export { default as Form } from './components/Form'
+export { default as Field } from './components/Field'
+export { default as Submit } from './components/Submit'
