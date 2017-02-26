@@ -28,9 +28,12 @@ export default class Form extends Component {
   getChildContext() {
     return {
       _form: {
-        changeField: this.changeField,
+        unregisterField: this.unregisterField,
         registerField: this.registerField,
-        unregisterField: this.unregisterField
+        changeField: this.changeField,
+        focusField: this.focusField,
+        blurField: this.blurField,
+        getField: this.getField
       }
     }
   }
@@ -42,6 +45,7 @@ export default class Form extends Component {
           [name]: {
             value: null,
             touched: false,
+            focused: false,
             pristine: true
           }
         }}
@@ -57,14 +61,42 @@ export default class Form extends Component {
     })
   }
 
+  getField = (name) => {
+    return this.state.fields[name]
+  }
+
   changeField = (name, value) => {
     this.setState(prevState => {
       return update(prevState, {
         fields: {
           [name]: { $merge: {
             value: value,
-            touched: true,
             pristine: false
+          }}
+        }
+      })
+    })
+  }
+
+  focusField = (name) => {
+    this.setState(prevState => {
+      return update(prevState, {
+        fields: {
+          [name]: {
+            focused: { $set: true }
+          }
+        }
+      })
+    })
+  }
+
+  blurField = (name) => {
+    this.setState(prevState => {
+      return update(prevState, {
+        fields: {
+          [name]: { $merge: {
+            focused: false,
+            touched: true
           }}
         }
       })
