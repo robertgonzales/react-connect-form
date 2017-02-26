@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react'
-import { update } from '../utils'
+import { update, getInitialValue } from '../utils'
 
 export default class Form extends Component {
 
@@ -27,7 +27,14 @@ export default class Form extends Component {
         changeField: this.changeField,
         focusField: this.focusField,
         blurField: this.blurField,
-        getField: this.getField
+        getField: this.getField,
+        pristine: this.pristine,
+        touched: this.touched,
+        values: this.values,
+        errors: this.errors,
+        valid: this.valid,
+        submit: this.submit,
+        reset: this.reset,
       }
     }
   }
@@ -70,32 +77,66 @@ export default class Form extends Component {
     }, true)
   }
 
-  registerField = (name, validators) => {
+  registerField = (name, type, validators) => {
+    this.validators[name] = validators
     this.setState(prevState => {
-      return update(prevState, {
-        fields: { $merge: {
-          [name]: {
-            value: null,
-            errors: [],
-            touched: false,
-            focused: false,
-            pristine: true,
-            validated: true,
-            validating: false,
+      const field = prevState.fields[name]
+      // field namespace is already registered.
+      if (field) {
+        return update(prevState, {
+          fields: {
+            [name]: { $merge: {
+              // increment field count.
+              count: field.count + 1,
+              value: getInitialValue(field, type)
+            }}
           }
-        }}
-      })
+        })
+      // create new field namespace.
+      } else {
+        return update(prevState, {
+          fields: { $merge: {
+            [name]: {
+              count: 1,
+              type: type,
+              errors: [],
+              touched: false,
+              focused: false,
+              pristine: true,
+              validated: true,
+              validating: false,
+              // TODO: get value for input type, handle default value
+              value: this.props.initialValues ? this.props.initialValues[name] : null
+            }
+          }}
+        })
+      }
     })
-    this.validators[name] = validators || []
   }
 
   unregisterField = (name) => {
-    this.setState(prevState => {
-      return update(prevState, {
-        fields: { $unset: [name] }
-      })
-    })
     delete this.validators[name]
+    this.setState(prevState => {
+      const field = prevState.fields[name]
+      // multiple fields registered to the same name.
+      if (field.count > 1) {
+        return update(prevState, {
+          fields: {
+            [name]: {
+              // decrement field count.
+              // TODO: changes to value or validation?
+              count: { $set: field.count - 1 }
+            }
+          }
+        })
+      // only one field registered to name.
+      } else {
+        return update(prevState, {
+          // completely remove field namespace.
+          fields: { $unset: [name] }
+        })
+      }
+    })
   }
 
   getField = (name) => {
