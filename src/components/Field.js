@@ -18,7 +18,7 @@ export default class Field extends Component {
   }
 
   componentWillMount() {
-    this.context._form.registerField(this.props.name)
+    this.context._form.registerField(this.props.name, this.props.validators)
   }
 
   componentWillUnmount() {

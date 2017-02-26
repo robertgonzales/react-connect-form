@@ -17,6 +17,8 @@ export default class Form extends Component {
     fields: {}
   }
 
+  validators = {}
+
   getChildContext() {
     return {
       _form: {
@@ -55,19 +57,21 @@ export default class Form extends Component {
      }, null)
    }
 
-  registerField = (name) => {
+  registerField = (name, validators) => {
     this.setState(prevState => {
       return update(prevState, {
         fields: { $merge: {
           [name]: {
+            errors: [],
             value: null,
             touched: false,
             focused: false,
-            pristine: true
+            pristine: true,
           }
         }}
       })
     })
+    this.validators[name] = validators || []
   }
 
   unregisterField = (name) => {
@@ -76,6 +80,7 @@ export default class Form extends Component {
         fields: { $unset: [name] }
       })
     })
+    delete this.validators[name]
   }
 
   getField = (name) => {
@@ -118,6 +123,54 @@ export default class Form extends Component {
         }
       })
     })
+    this.validateField(name, this.state.fields[name].value)
+  }
+
+  validateField = (name, value) => {
+    //  TODO: shouldFieldValidate()
+    // TODO: how should user build async errors? Promise.reject/resolve()
+    const { syncErrors, asyncErrors } = this.runFieldValidations(name, value)
+    const isAsync = asyncErrors.length > 0
+    this.setState(prevState => {
+      return update(prevState, {
+        fields: {
+          [name]: { $merge: {
+            errors: syncErrors.filter(e => e).map(e => e.message || e)
+          }}
+        }
+      })
+    })
+    if (isAsync) {
+      Promise.all(asyncErrors.map(p => p.catch(e => e)))
+        .then(errors => {
+          console.log(errors)
+          this.setState(prevState => {
+             return update(prevState, {
+               fields: {
+                 [name]: { $merge: {
+                   errors: [...errors, ...prevState.fields[name].errors].filter(e => e).map(e => e.message || e)
+                 }}
+               }
+             })
+           })
+        })
+    }
+  }
+
+  runFieldValidations = (name, value) => {
+    return this.validators[name].reduce((errors, validator) => {
+      let err = validator(value, this.values)
+      if (!err) {
+        return errors
+      } else if (typeof err === 'string' || err instanceof Error) {
+        errors.syncErrors.push(err)
+      } else if (typeof err.then === 'function') {
+        errors.asyncErrors.push(err)
+      } else {
+        throw new Error('validation must return a String, Error, or Promise')
+      }
+      return errors
+    }, { syncErrors: [], asyncErrors: [] })
   }
 
   submit = () => {
