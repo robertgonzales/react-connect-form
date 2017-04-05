@@ -7,6 +7,16 @@ export default class Submit extends Component {
     _form: PropTypes.object.isRequired
   }
 
+  static propTypes = {
+    render: PropTypes.func,
+    component: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+    onClick: PropTypes.func,
+  }
+
+  static defaultProps = {
+    component: 'button'
+  }
+
   constructor (props, context) {
     super(props, context)
     if (!context._form) throw new Error('Submit must be inside Form')
@@ -17,10 +27,37 @@ export default class Submit extends Component {
   }
 
   render () {
-    return (
-      <button type='submit' onClick={this.handleClick}>
-        {this.props.children}
-      </button>
-    )
+    const {
+      component,
+      render,
+      ...rest
+    } = this.props
+    const {
+      submitting,
+      computed,
+      valid,
+    } = this.context._form
+    const inputProps = {
+      ...rest,
+      type: 'submit',
+      onClick: this.handleClick,
+      disabled: submitting || !valid
+    }
+    const passProps = {
+      ...inputProps,
+      ...computed,
+      submitting
+    }
+    if (component) {
+      if (component === 'button') {
+        return React.createElement(component, inputProps)
+      } else {
+        return React.createElement(component, passProps)
+      }
+    } else if (typeof render === 'function') {
+      return render(passProps)
+    } else {
+      return null
+    }
   }
 }

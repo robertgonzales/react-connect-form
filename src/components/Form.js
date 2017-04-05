@@ -34,7 +34,9 @@ export default class Form extends Component {
 
   state = {
     fields: {},
-    submitting: false
+    submitting: false,
+    submitFailure: null,
+    submitSuccess: null
   }
   validators = {}
   initialValues = {}
@@ -45,16 +47,18 @@ export default class Form extends Component {
         unregisterField: this.unregisterField,
         registerField: this.registerField,
         changeField: this.changeField,
+        resetField: this.resetField,
         focusField: this.focusField,
         blurField: this.blurField,
         getField: this.getField,
         submitting: this.state.submitting,
         computed: this.computed,
-        // pristine: this.pristine,
-        // touched: this.touched,
-        // values: this.values,
-        // errors: this.errors,
-        // valid: this.valid,
+        pristine: this.pristine,
+        touched: this.touched,
+        values: this.values,
+        errors: this.errors,
+        valid: this.valid,
+        fields: this.state.fields,
         submit: this.submit,
         reset: this.reset
       }
@@ -216,9 +220,9 @@ export default class Form extends Component {
   }
 
   resetField = (name, initialValue) => {
-    // if (initialValue !== undefined) {
-    //   this.initialValues[name] = initialValue
-    // }
+    if (initialValue !== undefined) {
+      this.initialValues[name] = initialValue
+    }
     this.setState(prevState => {
       return {
         fields: {
@@ -321,9 +325,8 @@ export default class Form extends Component {
     const { syncErrors, asyncErrors } = this.runFieldValidations(name, value)
     const hasSync = syncErrors.length > 0
     const hasAsync = asyncErrors.length > 0
-    if (hasSync) {
-      this.warnField(name, syncErrors, hasAsync)
-    }
+    // if no syncErrors, this will clear errors
+    this.warnField(name, syncErrors, hasAsync)
     if (hasAsync) {
       // treat each error as successful resolve so we can handle all of them.
       const reflectErrors = asyncErrors.map(reflectPromise)
