@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react'
-import { update, cancelPromise, reflectPromise, getInitialValue } from '../utils'
+import { cancelPromise, reflectPromise, getInitialValue } from '../utils'
 
 export default class Form extends Component {
 
@@ -101,22 +101,25 @@ export default class Form extends Component {
   registerField = (name, type, validators) => {
     this.validators[name] = validators
     this.setState(prevState => {
-      const field = prevState.fields[name]
+      const prevField = prevState.fields[name]
       // field namespace is already registered.
-      if (field) {
-        return update(prevState, {
+      if (prevField) {
+        return {
           fields: {
-            [name]: { $merge: {
+            ...prevState.fields,
+            [name]: {
+              ...prevField,
               // increment field count.
-              count: field.count + 1,
-              value: getInitialValue(field, type)
-            }}
+              count: prevField.count + 1,
+              value: getInitialValue(prevField, type)
+            }
           }
-        })
+        }
       // create new field namespace.
       } else {
-        return update(prevState, {
-          fields: { $merge: {
+        return {
+          fields: {
+            ...prevState.fields,
             [name]: {
               count: 1,
               type: type,
@@ -129,33 +132,39 @@ export default class Form extends Component {
               // TODO: get value for input type, handle default value
               value: this.props.initialValues ? this.props.initialValues[name] : null
             }
-          }}
-        })
+          }
+        }
       }
     })
   }
 
-  unregisterField = (name) => {
-    delete this.validators[name]
+  unregisterField = (name, fieldProps) => {
     this.setState(prevState => {
-      const field = prevState.fields[name]
+      const prevField = prevState.fields[name]
       // multiple fields registered to the same name.
-      if (field.count > 1) {
-        return update(prevState, {
+      if (prevField.count > 1) {
+        return {
           fields: {
+            ...prevState.fields,
             [name]: {
+              ...prevField,
               // decrement field count.
+              count: prevField.count - 1,
               // TODO: changes to value or validation?
-              count: { $set: field.count - 1 }
             }
           }
-        })
+        }
       // only one field registered to name.
       } else {
-        return update(prevState, {
-          // completely remove field namespace.
-          fields: { $unset: [name] }
-        })
+        delete this.validators[name]
+        return {
+          fields: Object.keys(prevState.fields).reduce((fields, key) => {
+            if (key !== name) {
+              fields[key] = prevState.fields[key]
+            }
+            return fields
+          }, {})
+        }
       }
     })
   }
@@ -166,46 +175,52 @@ export default class Form extends Component {
 
   changeField = (name, value) => {
     this.setState(prevState => {
-      return update(prevState, {
+      const prevField = prevState.fields[name]
+      // TODO: ensure this is actually merging setStates
+      if (prevField.errors.length) {
+        this.validateField(name, value)
+      }
+      return {
         fields: {
-          [name]: { $merge: {
+          ...prevState.fields,
+          [name]: {
+            ...prevField,
             value: value,
             touched: true,
             validated: value === prevState.fields[name].value,
-            // TODO: handle initialValues and defaultValues
             pristine: !!(this.props.initialValues && this.props.initialValues[name] === value)
-          }}
+          }
         }
-      })
-      // TODO: merge synchronous validation changes
-      if (this.state.fields[name].errors.length) {
-        this.validateField(name, value)
       }
     })
   }
 
   focusField = (name) => {
     this.setState(prevState => {
-      return update(prevState, {
+      return {
         fields: {
+          ...prevState.fields,
           [name]: {
-            focused: { $set: true }
+            ...prevState.fields[name],
+            focused: true
           }
         }
-      })
+      }
     })
   }
 
   blurField = (name) => {
     this.setState(prevState => {
-      return update(prevState, {
+      return {
         fields: {
-          [name]: { $merge: {
+          ...prevState.fields,
+          [name]: {
+            ...prevState.fields[name],
             focused: false,
             touched: true
-          }}
+          }
         }
-      })
+      }
     })
     this.validateField(name, this.state.fields[name].value)
   }
@@ -213,18 +228,18 @@ export default class Form extends Component {
   // TODO: better name (also unwarns field)
   warnField = (name, errors, validating) => {
     errors = errors.filter(err => err).map(err => err.message || err)
-    return new Promise(resolve => {
-      this.setState(prevState => {
-        return update(prevState, {
-          fields: {
-            [name]: { $merge: {
-              errors: errors,
-              validating: validating,
-              validated: !errors.length && !validating,
-            }}
+    this.setState(prevState => {
+      return {
+        fields: {
+          ...prevState.fields,
+          [name]: {
+            ...prevState.fields[name],
+            errors: errors,
+            validating: validating,
+            validated: !errors.length && !validating
           }
-        })
-      }, resolve)
+        }
+      }
     })
   }
 
