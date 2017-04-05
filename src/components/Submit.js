@@ -33,8 +33,9 @@ export default class Submit extends Component {
       ...rest
     } = this.props
     const {
+      submitSuccess,
+      submitFailure,
       submitting,
-      computed,
       valid,
     } = this.context._form
     const inputProps = {
@@ -45,8 +46,9 @@ export default class Submit extends Component {
     }
     const passProps = {
       ...inputProps,
-      ...computed,
-      submitting
+      submitSuccess,
+      submitFailure,
+      submitting,
     }
     if (component) {
       if (component === 'button') {

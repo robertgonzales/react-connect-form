@@ -219,16 +219,19 @@ export default class Form extends Component {
     })
   }
 
-  resetField = (name, initialValue) => {
-    if (initialValue !== undefined) {
-      this.initialValues[name] = initialValue
-    }
+  resetField = (name, fieldProps) => {
     this.setState(prevState => {
+      const prevField = prevState.fields[name]
+      if (this.props.initialValues[name]) {
+        this.initialValues[name] = this.props.initialValues[name]
+      } else if (fieldProps) {
+        this.initialValues[name] = getInitialValue(prevField, fieldProps)
+      }
       return {
         fields: {
           ...prevState.fields,
           [name]: {
-            ...prevState.fields[name],
+            ...prevField,
             touched: false,
             pristine: true,
             validated: true,
