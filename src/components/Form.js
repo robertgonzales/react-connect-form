@@ -1,20 +1,31 @@
 import React, { Component, PropTypes } from 'react'
-import { cancelPromise, reflectPromise, getInitialValue } from '../utils'
+import {
+  cancelPromise,
+  reflectPromise,
+  getNextValue,
+  getInitialValue,
+  getDecrementValue,
+} from '../utils'
 
 export default class Form extends Component {
-
   static displayName = 'Form'
 
   static propTypes = {
+    initialValues: PropTypes.object,
     onSubmit: PropTypes.func,
     onSubmitSuccess: PropTypes.func,
     onSubmitFailure: PropTypes.func
   }
 
+  static contextTypes = {
+    _form: PropTypes.object
+  }
+
   static defaultProps = {
-    onSubmit: (arg) => console.log("onSubmit", arg),
-    onSubmitSuccess: (arg) => console.log("onSubmitSuccess", arg),
-    onSubmitFailure: (arg) => console.log("onSubmitFailure", arg),
+    initialValues: {},
+    onSubmit: (e) => console.log('onSubmit', e),
+    onSubmitSuccess: (e) => console.log('onSubmitSuccess', e),
+    onSubmitFailure: (e) => console.log('onSubmitFailure', e)
   }
 
   static childContextTypes = {
@@ -23,12 +34,12 @@ export default class Form extends Component {
 
   state = {
     fields: {},
-    submitting: false,
+    submitting: false
   }
-
   validators = {}
+  initialValues = {}
 
-  getChildContext() {
+  getChildContext () {
     return {
       _form: {
         unregisterField: this.unregisterField,
@@ -37,22 +48,31 @@ export default class Form extends Component {
         focusField: this.focusField,
         blurField: this.blurField,
         getField: this.getField,
+        submitting: this.state.submitting,
         pristine: this.pristine,
         touched: this.touched,
         values: this.values,
         errors: this.errors,
         valid: this.valid,
         submit: this.submit,
-        reset: this.reset,
+        reset: this.reset
       }
     }
   }
 
-  componentDidMount() {
+  componentWillReceiveProps (nextProps) {
+    if (nextProps.initialValues !== this.props.initialValues) {
+      Object.keys(nextProps.initialValues).forEach(name => {
+        this.resetField(name, nextProps.initialValues[name])
+      })
+    }
+  }
+
+  componentDidMount () {
     this._isUnmounted = false
   }
 
-  componentWillUnmount() {
+  componentWillUnmount () {
     this._isUnmounted = true
   }
 
@@ -60,48 +80,58 @@ export default class Form extends Component {
     return cancelPromise(promise, this._isUnmounted)
   }
 
-  get values() {
+  get values () {
     return Object.keys(this.state.fields).reduce((values, name) => {
       if (!this.state.fields[name].value) return values
       return { ...values, [name]: this.state.fields[name].value }
     }, {})
   }
 
-  get pristine() {
+  get pristine () {
     return Object.keys(this.state.fields).reduce((pristine, name) => {
       return pristine ? this.state.fields[name].pristine : false
     }, true)
   }
 
-  get touched() {
+  get touched () {
     return Object.keys(this.state.fields).reduce((touched, name) => {
       return touched ? true : this.state.fields[name].touched
     }, false)
   }
 
-  get focused() {
+  get focused () {
     return Object.keys(this.state.fields).reduce((focused, name) => {
-      return focused ? focused : this.state.fields[name].focused ? name : null
+      if (!focused) return this.state.fields[name].focused ? name : null
     }, null)
   }
 
-  get errors() {
+  get errors () {
     return Object.keys(this.state.fields).reduce((errors, name) => {
       if (!this.state.fields[name].errors.length) return errors
       return { ...errors, [name]: this.state.fields[name].errors }
     }, {})
   }
 
-  get valid() {
+  get valid () {
     return Object.keys(this.state.fields).reduce((valid, name) => {
       return valid ? !this.state.fields[name].errors.length : false
     }, true)
   }
 
-  registerField = (name, type, validators) => {
-    this.validators[name] = validators
+  get element () {
+    return this.context._form ? 'div' : 'form'
+  }
+
+  registerField = (name, fieldProps) => {
+    this.validators[name] = fieldProps.validators
     this.setState(prevState => {
       const prevField = prevState.fields[name]
+      // recalculate initial values
+      if (this.props.initialValues[name]) {
+        this.initialValues[name] = this.props.initialValues[name]
+      } else {
+        this.initialValues[name] = getInitialValue(prevField, fieldProps)
+      }
       // field namespace is already registered.
       if (prevField) {
         return {
@@ -111,7 +141,7 @@ export default class Form extends Component {
               ...prevField,
               // increment field count.
               count: prevField.count + 1,
-              value: getInitialValue(prevField, type)
+              value: this.initialValues[name]
             }
           }
         }
@@ -121,16 +151,15 @@ export default class Form extends Component {
           fields: {
             ...prevState.fields,
             [name]: {
+              type: fieldProps.type,
               count: 1,
-              type: type,
               errors: [],
               touched: false,
               focused: false,
               pristine: true,
               validated: true,
               validating: false,
-              // TODO: get value for input type, handle default value
-              value: this.props.initialValues ? this.props.initialValues[name] : null
+              value: this.initialValues[name]
             }
           }
         }
@@ -150,13 +179,15 @@ export default class Form extends Component {
               ...prevField,
               // decrement field count.
               count: prevField.count - 1,
-              // TODO: changes to value or validation?
+              value: getDecrementValue(prevField, fieldProps)
+              // TODO: run validation again?
             }
           }
         }
       // only one field registered to name.
       } else {
         delete this.validators[name]
+        delete this.initialValues[name]
         return {
           fields: Object.keys(prevState.fields).reduce((fields, key) => {
             if (key !== name) {
@@ -169,17 +200,41 @@ export default class Form extends Component {
     })
   }
 
+  resetField = (name, initialValue) => {
+    // if (initialValue !== undefined) {
+    //   this.initialValues[name] = initialValue
+    // }
+    this.setState(prevState => {
+      return {
+        fields: {
+          ...prevState.fields,
+          [name]: {
+            ...prevState.fields[name],
+            touched: false,
+            pristine: true,
+            validated: true,
+            validating: false,
+            value: this.initialValues[name]
+          }
+        }
+      }
+    })
+  }
+
   getField = (name) => {
     return this.state.fields[name]
   }
 
-  changeField = (name, value) => {
+  changeField = (name, event) => {
     this.setState(prevState => {
       const prevField = prevState.fields[name]
+      const value = getNextValue(event, prevField)
       // TODO: ensure this is actually merging setStates
       if (prevField.errors.length) {
         this.validateField(name, value)
       }
+      // FIXME: just testing!
+      this.props.onChange && this.props.onChange({ ...this.values, [name]: value })
       return {
         fields: {
           ...prevState.fields,
@@ -187,8 +242,8 @@ export default class Form extends Component {
             ...prevField,
             value: value,
             touched: true,
-            validated: value === prevState.fields[name].value,
-            pristine: !!(this.props.initialValues && this.props.initialValues[name] === value)
+            validated: value === prevField.value,
+            pristine: this.initialValues[name] === value
           }
         }
       }
@@ -243,7 +298,6 @@ export default class Form extends Component {
     })
   }
 
-  // TODO: merge blur/change updates into sync updates
   validateField = (name, value) => {
     if (!this.shouldFieldValidate(name, value)) {
       return Promise.resolve()
@@ -366,28 +420,13 @@ export default class Form extends Component {
   }
 
   reset = () => {
-
+    Object.keys(this.state.fields).forEach(name => this.resetField(name))
   }
 
-  render() {
-    return (
-      <form onSubmit={e => e.preventDefault()}>
-        <pre>
-          <code>
-            {JSON.stringify({
-              "pristine": this.pristine,
-              "touched": this.touched,
-              "focused": this.focused,
-              "errors": this.errors,
-              "valid": this.valid,
-              "fields": this.state.fields,
-              "values": this.values,
-            }, null, 2)}
-          </code>
-        </pre>
-        {this.props.children}
-      </form>
-    )
+  render () {
+    return React.createElement(this.element, {
+      onSubmit: (e) => { e.preventDefault() },
+      children: this.props.children
+    })
   }
-
 }
