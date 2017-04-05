@@ -19,10 +19,13 @@
   "scripts": {
     "prepublish": "babel --plugins=transform-es2015-modules-umd,transform-class-properties,transform-export-extensions src --out-dir ./dist"
   },
+  "standard": {
+    "parser": "babel-eslint"
+  },
   "devDependencies": {
     "babel-cli": "^6.6.4",
     "babel-core": "^6.7.4",
-    "babel-eslint": "^6.0.2",
+    "babel-eslint": "^6.1.2",
     "babel-plugin-transform-class-properties": "^6.23.0",
     "babel-plugin-transform-es2015-modules-umd": "^6.6.5",
     "babel-plugin-transform-export-extensions": "^6.22.0",
@@ -41,7 +44,8 @@
     "react": "^15.0.0",
     "react-addons-test-utils": "^15.0.0",
     "react-dom": "^15.0.0",
-    "sinon": "^1.17.3"
+    "sinon": "^1.17.3",
+    "standard": "^9.0.1"
   },
   "peerDependencies": {
     "react": "~0.14.8 || ^15.0.0",
@@ -49,7 +53,6 @@
   },
   "dependencies": {
     "babel-runtime": "^6.6.1",
-    "immutability-helper": "^2.1.2",
     "object-assign": "^4.1.1"
   }
 }
