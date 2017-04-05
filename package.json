@@ -1,19 +1,22 @@
 {
-  "name": "react-form",
+  "name": "react-controlled-form",
   "version": "0.1.0",
   "description": "Declarative React Forms",
   "repository": {
     "type": "git",
-    "url": "https://github.com/robertgonzales/react-form.git"
+    "url": "https://github.com/robertgonzales/react-controlled-form.git"
   },
   "author": "Robert Gonzales",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/robertgonzales/react-form/issues"
+    "url": "https://github.com/robertgonzales/react-controlled-form/issues"
   },
-  "homepage": "https://github.com/robertgonzales/react-form",
+  "homepage": "https://github.com/robertgonzales/react-controlled-form",
   "keywords": [
     "react-component",
+    "declarative",
+    "controlled",
+    "components",
     "react"
   ],
   "scripts": {
