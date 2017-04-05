@@ -49,11 +49,12 @@ export default class Form extends Component {
         blurField: this.blurField,
         getField: this.getField,
         submitting: this.state.submitting,
-        pristine: this.pristine,
-        touched: this.touched,
-        values: this.values,
-        errors: this.errors,
-        valid: this.valid,
+        computed: this.computed,
+        // pristine: this.pristine,
+        // touched: this.touched,
+        // values: this.values,
+        // errors: this.errors,
+        // valid: this.valid,
         submit: this.submit,
         reset: this.reset
       }
@@ -78,6 +79,20 @@ export default class Form extends Component {
 
   cancelOnUnmount = (promise) => {
     return cancelPromise(promise, this._isUnmounted)
+  }
+
+  get computed () {
+    return Object.keys(this.state.fields).reduce((computed, name) => {
+      const field = this.state.fields[name]
+      return {
+        values: field.value ? { ...computed.values, [name]: field.value } : computed.values,
+        errors: field.errors.length ? { ...computed.errors, [name]: field.errors } : computed.errors,
+        pristine: computed.pristine ? field.pristine : false,
+        touched: computed.touched ? true : field.touched,
+        focused: computed.focused || field.focused ? name : null,
+        valid: computed.valid ? !field.errors.length : false
+      }
+    }, { values: {}, pristine: true, touched: false, focused: null, errors: null, valid: true })
   }
 
   get values () {
