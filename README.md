@@ -1,4 +1,7 @@
-# React Former
+# React Controlled Form
+
+### TODO
+- add dist to .gitignore (and delete dist)
 
 ### possible names:
 - react-former
