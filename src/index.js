@@ -1,2 +1,2 @@
-export { Form, Field, Submit } from './components'
+export { Field, Form, Reset, Submit } from './components'
 export { validators } from './utils'
