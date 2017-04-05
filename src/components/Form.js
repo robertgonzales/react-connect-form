@@ -6,7 +6,9 @@ export default class Form extends Component {
   static displayName = 'Form'
 
   static propTypes = {
-    onSubmit: PropTypes.func
+    onSubmit: PropTypes.func,
+    onSubmitSuccess: PropTypes.func,
+    onSubmitFailure: PropTypes.func
   }
 
   static defaultProps = {
@@ -233,43 +235,35 @@ export default class Form extends Component {
     }
     // TODO: how should user build async errors? Promise.reject/resolve()
     const { syncErrors, asyncErrors } = this.runFieldValidations(name, value)
-    const isAsync = asyncErrors.length > 0
-    // return promise so form can ensure all field validations before submitting.
-    return new Promise((resolve, reject) => {
-      // update field immediately for synchronous errors.
-      Promise.resolve(this.warnField(name, syncErrors, isAsync))
-        // resolve validation after fields are updated AND no async errors.
-        .then(() => !isAsync && resolve())
-        // field wasn't updated because form unmounted.
-        .catch(reject)
-      if (isAsync) {
-        // treat each error as successful resolve so we can handle all of them.
-        const reflectErrors = asyncErrors.map(reflectPromise)
-        // update field for first error when there are multiple async errors.
-        if (asyncErrors.length > 1) {
-          // wait for first error to resolve.
-          // cancel if error resolves after unmount.
-          this.cancelOnUnmount(Promise.race(reflectErrors))
-            // update field after first error resolves.
-            .then(error => this.warnField(name, [...error, ...syncErrors], true))
-        }
-        // wait for all errors to resolve.
-        // cancel if errors resolve after unmount.
-        this.cancelOnUnmount(Promise.all(reflectErrors))
-          // update field after errors resolve.
-          .then(errors => this.warnField(name, [...errors, ...syncErrors], false))
-          // resolve validation after fields are updated.
-          .then(resolve)
-          // field wasn't updated because form unmounted.
-          .catch(reject)
+    const hasSync = syncErrors.length > 0
+    const hasAsync = asyncErrors.length > 0
+    if (hasSync) {
+      this.warnField(name, syncErrors, hasAsync)
+    }
+    if (hasAsync) {
+      // treat each error as successful resolve so we can handle all of them.
+      const reflectErrors = asyncErrors.map(reflectPromise)
+      // update field for first error when there are multiple async errors.
+      if (asyncErrors.length > 1) {
+        // wait for first error to resolve.
+        // cancel if error resolves after unmount.
+        this.cancelOnUnmount(Promise.race(reflectErrors))
+          // update field after first error resolves.
+          .then(error => this.warnField(name, [error, ...syncErrors], true))
       }
-    })
+      // wait for all errors to resolve.
+      // cancel if errors resolve after unmount.
+      return this.cancelOnUnmount(Promise.all(reflectErrors))
+        // update field after errors resolve.
+        .then(errors => this.warnField(name, [...errors, ...syncErrors], false))
+    } else {
+      Promise.resolve()
+    }
   }
 
   shouldFieldValidate = (name, nextValue) => {
-    const { value, validated } = this.state.fields[name]
-    if (validated)
-      return false
+    const { validated } = this.state.fields[name]
+    if (validated) return false
     return true
   }
 
@@ -309,7 +303,7 @@ export default class Form extends Component {
     if (this.valid) {
       return onSubmit && onSubmit(this.values)
     } else {
-      return Promise.reject("Form is invalid")
+      return Promise.reject(new Error('Form is invalid'))
     }
   }
 
@@ -319,7 +313,7 @@ export default class Form extends Component {
       this.setState({
         submitting: true,
         submitSuccess: null,
-        submitFailure: null,
+        submitFailure: null
       })
     }
     // force submission into promise.
@@ -330,7 +324,7 @@ export default class Form extends Component {
     this.setState({
       submitting: false,
       submitSuccess: true,
-      submitFailure: null,
+      submitFailure: null
     }, () => {
       this.props.onSubmitSuccess()
     })
