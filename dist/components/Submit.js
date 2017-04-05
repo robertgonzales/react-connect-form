@@ -124,8 +124,9 @@
             rest = _objectWithoutProperties(_props, ['component', 'render']);
 
         var _context$_form = this.context._form,
+            submitSuccess = _context$_form.submitSuccess,
+            submitFailure = _context$_form.submitFailure,
             submitting = _context$_form.submitting,
-            computed = _context$_form.computed,
             valid = _context$_form.valid;
 
         var inputProps = _extends({}, rest, {
@@ -133,7 +134,9 @@
           onClick: this.handleClick,
           disabled: submitting || !valid
         });
-        var passProps = _extends({}, inputProps, computed, {
+        var passProps = _extends({}, inputProps, {
+          submitSuccess: submitSuccess,
+          submitFailure: submitFailure,
           submitting: submitting
         });
         if (component) {

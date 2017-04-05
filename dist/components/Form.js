@@ -198,13 +198,16 @@
             };
           }
         });
-      }, _this.resetField = function (name, initialValue) {
-        if (initialValue !== undefined) {
-          _this.initialValues[name] = initialValue;
-        }
+      }, _this.resetField = function (name, fieldProps) {
         _this.setState(function (prevState) {
+          var prevField = prevState.fields[name];
+          if (_this.props.initialValues[name]) {
+            _this.initialValues[name] = _this.props.initialValues[name];
+          } else if (fieldProps) {
+            _this.initialValues[name] = (0, _utils.getInitialValue)(prevField, fieldProps);
+          }
           return {
-            fields: _extends({}, prevState.fields, _defineProperty({}, name, _extends({}, prevState.fields[name], {
+            fields: _extends({}, prevState.fields, _defineProperty({}, name, _extends({}, prevField, {
               touched: false,
               pristine: true,
               validated: true,
