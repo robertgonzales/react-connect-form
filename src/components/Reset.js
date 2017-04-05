@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react'
 
-export default class Submit extends Component {
-  static displayName = 'Submit'
+export default class Reset extends Component {
+  static displayName = 'Reset'
 
   static contextTypes = {
     _form: PropTypes.object.isRequired
@@ -9,16 +9,16 @@ export default class Submit extends Component {
 
   constructor (props, context) {
     super(props, context)
-    if (!context._form) throw new Error('Submit must be inside Form')
+    if (!context._form) throw new Error('Reset must be inside Form')
   }
 
   handleClick = (e) => {
-    this.context._form.submit(e)
+    this.context._form.reset()
   }
 
   render () {
     return (
-      <button type='submit' onClick={this.handleClick}>
+      <button type='reset' onClick={this.handleClick}>
         {this.props.children}
       </button>
     )

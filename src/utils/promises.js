@@ -3,9 +3,9 @@
 export const reflectPromise = (promise) => promise.catch(err => err)
 
 // returns promise that can be canceled
-export const cancelPromise = (promise, canceled) => {
+export const cancelPromise = (promise, cancel) => {
   return new Promise((resolve, reject) => {
-    promise.then(val => canceled ? reject({ canceled: true }) : resolve(val))
-    promise.catch(error => canceled ? reject({ canceled: true }) : reject(error))
+    promise.then(val => cancel ? reject({ canceled: true }) : resolve(val))
+    promise.catch(error => cancel ? reject({ canceled: true }) : reject(error))
   })
 }
