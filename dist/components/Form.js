@@ -136,7 +136,8 @@
       }, _this.validators = {}, _this.initialValues = {}, _this.cancelOnUnmount = function (promise) {
         return (0, _utils.cancelPromise)(promise, _this._isUnmounted);
       }, _this.registerField = function (name, fieldProps) {
-        _this.validators[name] = fieldProps.validators;
+        // TODO: add required?
+        _this.validators[name] = (0, _utils.getValidators)(fieldProps);
         _this.setState(function (prevState) {
           var prevField = prevState.fields[name];
           // recalculate initial values
@@ -216,8 +217,6 @@
             })))
           };
         });
-      }, _this.getField = function (name) {
-        return _this.state.fields[name];
       }, _this.changeField = function (name, event) {
         _this.setState(function (prevState) {
           var prevField = prevState.fields[name];
@@ -393,15 +392,14 @@
             resetField: this.resetField,
             focusField: this.focusField,
             blurField: this.blurField,
-            getField: this.getField,
             submitting: this.state.submitting,
-            computed: this.computed,
+            fields: this.state.fields,
             pristine: this.pristine,
+            focused: this.focused,
             touched: this.touched,
             values: this.values,
             errors: this.errors,
             valid: this.valid,
-            fields: this.state.fields,
             submit: this.submit,
             reset: this.reset
           }
@@ -439,21 +437,34 @@
         });
       }
     }, {
-      key: 'computed',
+      key: 'pristine',
+      get: function get() {
+        return Object.values(this.state.fields).every(function (field) {
+          return field.pristine;
+        });
+      }
+    }, {
+      key: 'touched',
+      get: function get() {
+        return Object.values(this.state.fields).some(function (field) {
+          return field.touched;
+        });
+      }
+    }, {
+      key: 'valid',
+      get: function get() {
+        return Object.values(this.state.fields).every(function (field) {
+          return field.errors.length < 1;
+        });
+      }
+    }, {
+      key: 'focused',
       get: function get() {
         var _this3 = this;
 
-        return Object.keys(this.state.fields).reduce(function (computed, name) {
-          var field = _this3.state.fields[name];
-          return {
-            values: field.value ? _extends({}, computed.values, _defineProperty({}, name, field.value)) : computed.values,
-            errors: field.errors.length ? _extends({}, computed.errors, _defineProperty({}, name, field.errors)) : computed.errors,
-            pristine: computed.pristine ? field.pristine : false,
-            touched: computed.touched ? true : field.touched,
-            focused: computed.focused || field.focused ? name : null,
-            valid: computed.valid ? !field.errors.length : false
-          };
-        }, { values: {}, pristine: true, touched: false, focused: null, errors: null, valid: true });
+        return Object.keys(this.state.fields).find(function (name) {
+          return _this3.state.fields[name].focused;
+        });
       }
     }, {
       key: 'values',
@@ -461,55 +472,21 @@
         var _this4 = this;
 
         return Object.keys(this.state.fields).reduce(function (values, name) {
-          if (!_this4.state.fields[name].value) return values;
-          return _extends({}, values, _defineProperty({}, name, _this4.state.fields[name].value));
+          values[name] = _this4.state.fields[name].value;
+          return values;
         }, {});
-      }
-    }, {
-      key: 'pristine',
-      get: function get() {
-        var _this5 = this;
-
-        return Object.keys(this.state.fields).reduce(function (pristine, name) {
-          return pristine ? _this5.state.fields[name].pristine : false;
-        }, true);
-      }
-    }, {
-      key: 'touched',
-      get: function get() {
-        var _this6 = this;
-
-        return Object.keys(this.state.fields).reduce(function (touched, name) {
-          return touched ? true : _this6.state.fields[name].touched;
-        }, false);
-      }
-    }, {
-      key: 'focused',
-      get: function get() {
-        var _this7 = this;
-
-        return Object.keys(this.state.fields).reduce(function (focused, name) {
-          if (!focused) return _this7.state.fields[name].focused ? name : null;
-        }, null);
       }
     }, {
       key: 'errors',
       get: function get() {
-        var _this8 = this;
+        var _this5 = this;
 
         return Object.keys(this.state.fields).reduce(function (errors, name) {
-          if (!_this8.state.fields[name].errors.length) return errors;
-          return _extends({}, errors, _defineProperty({}, name, _this8.state.fields[name].errors));
+          if (_this5.state.fields[name].errors.length) {
+            errors[name] = _this5.state.fields[name].errors;
+          }
+          return errors;
         }, {});
-      }
-    }, {
-      key: 'valid',
-      get: function get() {
-        var _this9 = this;
-
-        return Object.keys(this.state.fields).reduce(function (valid, name) {
-          return valid ? !_this9.state.fields[name].errors.length : false;
-        }, true);
       }
     }, {
       key: 'element',

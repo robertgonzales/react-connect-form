@@ -151,6 +151,19 @@
         }
       }
     }, {
+      key: 'shouldComponentUpdate',
+      value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
+        var _this2 = this;
+
+        var nextField = nextContext._form.fields[nextProps.name];
+        if (!this.field) return true;
+        return Object.keys(nextProps).some(function (key) {
+          return nextProps[key] !== _this2.props[key];
+        }) || Object.keys(nextField).some(function (key) {
+          return nextField[key] !== _this2.field[key];
+        });
+      }
+    }, {
       key: 'render',
       value: function render() {
         if (!this.field) return null;
@@ -186,7 +199,7 @@
     }, {
       key: 'field',
       get: function get() {
-        return this.context._form.getField(this.props.name);
+        return this.context._form.fields[this.props.name];
       }
     }, {
       key: 'value',

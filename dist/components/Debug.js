@@ -110,12 +110,12 @@
           _react2.default.createElement(
             'code',
             null,
-            JSON.stringify(rest, null, 1)
+            JSON.stringify(rest, null, 2)
           ),
           this.props.fields && _react2.default.createElement(
             'code',
             null,
-            JSON.stringify(fields, null, 1)
+            JSON.stringify(fields, null, 2)
           )
         );
       }

@@ -1,22 +1,34 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports', './values', './promises', './validators', './polyfills'], factory);
+    define(['exports', './promises', './values', './validators', './polyfills'], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require('./values'), require('./promises'), require('./validators'), require('./polyfills'));
+    factory(exports, require('./promises'), require('./values'), require('./validators'), require('./polyfills'));
   } else {
     var mod = {
       exports: {}
     };
-    factory(mod.exports, global.values, global.promises, global.validators, global.polyfills);
+    factory(mod.exports, global.promises, global.values, global.validators, global.polyfills);
     global.index = mod.exports;
   }
-})(this, function (exports, _values, _promises, _validators2) {
+})(this, function (exports, _promises, _values, _validators2) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  exports.cancelPromise = exports.reflectPromise = exports.getDecrementValue = exports.getInitialValue = exports.getNextValue = exports.getEventValue = exports.valueIsEvent = exports.validators = undefined;
+  exports.getValidators = exports.getDecrementValue = exports.getInitialValue = exports.getNextValue = exports.getEventValue = exports.valueIsEvent = exports.cancelPromise = exports.reflectPromise = exports.validators = undefined;
+  Object.defineProperty(exports, 'reflectPromise', {
+    enumerable: true,
+    get: function () {
+      return _promises.reflectPromise;
+    }
+  });
+  Object.defineProperty(exports, 'cancelPromise', {
+    enumerable: true,
+    get: function () {
+      return _promises.cancelPromise;
+    }
+  });
   Object.defineProperty(exports, 'valueIsEvent', {
     enumerable: true,
     get: function () {
@@ -47,16 +59,10 @@
       return _values.getDecrementValue;
     }
   });
-  Object.defineProperty(exports, 'reflectPromise', {
+  Object.defineProperty(exports, 'getValidators', {
     enumerable: true,
     get: function () {
-      return _promises.reflectPromise;
-    }
-  });
-  Object.defineProperty(exports, 'cancelPromise', {
-    enumerable: true,
-    get: function () {
-      return _promises.cancelPromise;
+      return _values.getValidators;
     }
   });
 

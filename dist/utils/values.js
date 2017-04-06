@@ -1,21 +1,22 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports'], factory);
+    define(['exports', './validators'], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports);
+    factory(exports, require('./validators'));
   } else {
     var mod = {
       exports: {}
     };
-    factory(mod.exports);
+    factory(mod.exports, global.validators);
     global.values = mod.exports;
   }
-})(this, function (exports) {
+})(this, function (exports, _validators) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
+  exports.getValidators = exports.getInitialValue = exports.getEventValue = exports.getDecrementValue = exports.getNextValue = exports.valueIsEvent = undefined;
 
   function _toConsumableArray(arr) {
     if (Array.isArray(arr)) {
@@ -136,5 +137,12 @@
       return initialChecked ? value : prevValue;
     }
     return initialValue;
+  };
+
+  var getValidators = exports.getValidators = function getValidators(fieldProps) {
+    if (fieldProps.required) {
+      return [].concat(_toConsumableArray(fieldProps.validators), [_validators.isRequired]);
+    }
+    return fieldProps.validators;
   };
 });
