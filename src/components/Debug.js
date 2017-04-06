@@ -17,11 +17,11 @@ export default class Debug extends Component {
     return (
       <pre>
         <code>
-          {JSON.stringify(rest, null, 1)}
+          {JSON.stringify(rest, null, 2)}
         </code>
         {this.props.fields && (
           <code>
-            {JSON.stringify(fields, null, 1)}
+            {JSON.stringify(fields, null, 2)}
           </code>
         )}
       </pre>

@@ -50,8 +50,17 @@ export default class Field extends Component {
     }
   }
 
+  shouldComponentUpdate(nextProps, nextState, nextContext) {
+    const nextField = nextContext._form.fields[nextProps.name]
+    if (!this.field) return true
+    return (
+      Object.keys(nextProps).some(key => nextProps[key] !== this.props[key]) ||
+      Object.keys(nextField).some(key => nextField[key] !== this.field[key])
+    )
+  }
+
   get field () {
-    return this.context._form.getField(this.props.name)
+    return this.context._form.fields[this.props.name]
   }
 
   get value () {
