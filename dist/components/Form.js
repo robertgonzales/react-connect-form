@@ -136,7 +136,6 @@
       }, _this.validators = {}, _this.initialValues = {}, _this.cancelOnUnmount = function (promise) {
         return (0, _utils.cancelPromise)(promise, _this._isUnmounted);
       }, _this.registerField = function (name, fieldProps) {
-        // TODO: add required?
         _this.validators[name] = (0, _utils.getValidators)(fieldProps);
         _this.setState(function (prevState) {
           var prevField = prevState.fields[name];

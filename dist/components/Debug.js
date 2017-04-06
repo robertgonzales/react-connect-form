@@ -85,6 +85,37 @@
     if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
   }
 
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  };
+
+  var getChanges = function getChanges(prev, next) {
+    if (!Object.keys(prev).length) {
+      return;
+    }
+    return Object.keys(prev).reduce(function (changes, key) {
+      if (prev[key] !== next[key]) {
+        if (Array.isArray(prev[key])) {
+          if (prev[key].length !== next[key].length || prev[key].some(function (item, index) {
+            return item !== next[key][index];
+          })) {
+            changes.push('\t' + key + ': ' + JSON.stringify(prev[key]) + ' => ' + JSON.stringify(next[key]));
+          }
+        } else if (_typeof(prev[key]) === 'object') {
+          var childChanges = getChanges(prev[key], next[key]);
+          if (childChanges) {
+            changes.push(key + '\n' + childChanges);
+          }
+        } else {
+          changes.push('\t' + key + ': ' + JSON.stringify(prev[key]) + ' => ' + JSON.stringify(next[key]));
+        }
+      }
+      return changes;
+    }, []).join('\n');
+  };
+
   var Debug = function (_Component) {
     _inherits(Debug, _Component);
 
@@ -98,26 +129,62 @@
     }
 
     _createClass(Debug, [{
+      key: 'shouldComponentUpdate',
+      value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
+        var _this2 = this;
+
+        var nextForm = nextContext._form;
+        return Object.keys(nextProps).some(function (key) {
+          return nextProps[key] !== _this2.props[key];
+        }) || Object.keys(nextForm).some(function (key) {
+          return nextForm[key] !== _this2.form[key];
+        });
+      }
+    }, {
+      key: 'componentDidUpdate',
+      value: function componentDidUpdate(prevProps, prevState, prevContext) {
+        var _prevContext$_form = prevContext._form,
+            prevFields = _prevContext$_form.fields,
+            prevForm = _objectWithoutProperties(_prevContext$_form, ['fields']);
+
+        var _context$_form = this.context._form,
+            nextFields = _context$_form.fields,
+            nextForm = _objectWithoutProperties(_context$_form, ['fields']);
+
+        if (this.props.log) {
+          if (this.props.name) {
+            console.log(getChanges(prevFields[name], nextFields[name]));
+          } else if (this.props.fields) {
+            console.log(getChanges(prevFields, nextFields));
+          } else {
+            console.log(getChanges(prevForm, nextForm));
+          }
+        }
+      }
+    }, {
       key: 'render',
       value: function render() {
-        var _context$_form = this.context._form,
-            fields = _context$_form.fields,
-            rest = _objectWithoutProperties(_context$_form, ['fields']);
+        var _form = this.form,
+            fields = _form.fields,
+            rest = _objectWithoutProperties(_form, ['fields']);
 
+        if (!this.props.render) {
+          return null;
+        }
         return _react2.default.createElement(
           'pre',
           null,
           _react2.default.createElement(
             'code',
             null,
-            JSON.stringify(rest, null, 2)
-          ),
-          this.props.fields && _react2.default.createElement(
-            'code',
-            null,
-            JSON.stringify(fields, null, 2)
+            this.props.name ? JSON.stringify(fields[name], null, 2) : this.props.field ? JSON.stringify(fields, null, 2) : JSON.stringify(rest, null, 2)
           )
         );
+      }
+    }, {
+      key: 'form',
+      get: function get() {
+        return this.context._form;
       }
     }]);
 
@@ -127,6 +194,15 @@
   Debug.displayName = 'Debug';
   Debug.contextTypes = {
     _form: _react.PropTypes.object.isRequired
+  };
+  Debug.propTypes = {
+    name: _react.PropTypes.string,
+    fields: _react.PropTypes.bool,
+    render: _react.PropTypes.bool,
+    log: _react.PropTypes.bool
+  };
+  Debug.defaultProps = {
+    log: true
   };
   exports.default = Debug;
 });
