@@ -3,6 +3,7 @@ import {
   cancelPromise,
   reflectPromise,
   getNextValue,
+  getValidators,
   getInitialValue,
   getDecrementValue,
 } from '../utils'
@@ -50,15 +51,14 @@ export default class Form extends Component {
         resetField: this.resetField,
         focusField: this.focusField,
         blurField: this.blurField,
-        getField: this.getField,
         submitting: this.state.submitting,
-        computed: this.computed,
+        fields: this.state.fields,
         pristine: this.pristine,
+        focused: this.focused,
         touched: this.touched,
         values: this.values,
         errors: this.errors,
         valid: this.valid,
-        fields: this.state.fields,
         submit: this.submit,
         reset: this.reset
       }
@@ -85,56 +85,36 @@ export default class Form extends Component {
     return cancelPromise(promise, this._isUnmounted)
   }
 
-  get computed () {
-    return Object.keys(this.state.fields).reduce((computed, name) => {
-      const field = this.state.fields[name]
-      return {
-        values: field.value ? { ...computed.values, [name]: field.value } : computed.values,
-        errors: field.errors.length ? { ...computed.errors, [name]: field.errors } : computed.errors,
-        pristine: computed.pristine ? field.pristine : false,
-        touched: computed.touched ? true : field.touched,
-        focused: computed.focused || field.focused ? name : null,
-        valid: computed.valid ? !field.errors.length : false
-      }
-    }, { values: {}, pristine: true, touched: false, focused: null, errors: null, valid: true })
+  get pristine () {
+    return Object.values(this.state.fields).every(field => field.pristine)
+  }
+
+  get touched () {
+    return Object.values(this.state.fields).some(field => field.touched)
+  }
+
+  get valid () {
+    return Object.values(this.state.fields).every(field => field.errors.length < 1)
+  }
+
+  get focused () {
+    return Object.keys(this.state.fields).find(name => this.state.fields[name].focused)
   }
 
   get values () {
     return Object.keys(this.state.fields).reduce((values, name) => {
-      if (!this.state.fields[name].value) return values
-      return { ...values, [name]: this.state.fields[name].value }
+      values[name] = this.state.fields[name].value
+      return values
     }, {})
-  }
-
-  get pristine () {
-    return Object.keys(this.state.fields).reduce((pristine, name) => {
-      return pristine ? this.state.fields[name].pristine : false
-    }, true)
-  }
-
-  get touched () {
-    return Object.keys(this.state.fields).reduce((touched, name) => {
-      return touched ? true : this.state.fields[name].touched
-    }, false)
-  }
-
-  get focused () {
-    return Object.keys(this.state.fields).reduce((focused, name) => {
-      if (!focused) return this.state.fields[name].focused ? name : null
-    }, null)
   }
 
   get errors () {
     return Object.keys(this.state.fields).reduce((errors, name) => {
-      if (!this.state.fields[name].errors.length) return errors
-      return { ...errors, [name]: this.state.fields[name].errors }
+      if (this.state.fields[name].errors.length) {
+        errors[name] = this.state.fields[name].errors
+      }
+      return errors
     }, {})
-  }
-
-  get valid () {
-    return Object.keys(this.state.fields).reduce((valid, name) => {
-      return valid ? !this.state.fields[name].errors.length : false
-    }, true)
   }
 
   get element () {
@@ -142,7 +122,7 @@ export default class Form extends Component {
   }
 
   registerField = (name, fieldProps) => {
-    this.validators[name] = fieldProps.validators
+    this.validators[name] = getValidators(fieldProps)
     this.setState(prevState => {
       const prevField = prevState.fields[name]
       // recalculate initial values
@@ -241,10 +221,6 @@ export default class Form extends Component {
         }
       }
     })
-  }
-
-  getField = (name) => {
-    return this.state.fields[name]
   }
 
   changeField = (name, event) => {

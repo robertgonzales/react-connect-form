@@ -1,3 +1,4 @@
+import { isRequired } from './validators'
 
 export const valueIsEvent = (e) => {
   return !!(e && e.stopPropagation && e.preventDefault)
@@ -91,4 +92,11 @@ export const getInitialValue = (formField = {}, fieldProps) => {
     return initialChecked ? value : prevValue
   }
   return initialValue
+}
+
+export const getValidators = (fieldProps) => {
+  if (fieldProps.required) {
+    return [...fieldProps.validators, isRequired]
+  }
+  return fieldProps.validators
 }

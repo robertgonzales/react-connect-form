@@ -1,7 +1,17 @@
 import './polyfills'
 export * as validators from './validators'
-export { valueIsEvent, getEventValue, getNextValue, getInitialValue, getDecrementValue } from './values'
-export { reflectPromise, cancelPromise } from './promises'
+export {
+  reflectPromise,
+  cancelPromise
+} from './promises'
+export {
+  valueIsEvent,
+  getEventValue,
+  getNextValue,
+  getInitialValue,
+  getDecrementValue,
+  getValidators
+} from './values'
 
 // async function validateField(name, value) {
 //   if (!this.shouldFieldValidate(name, value)) {
