@@ -334,25 +334,22 @@
           // should only fail to resolve if form unmounts.
           return [].concat(_toConsumableArray(validations), [_this.validateField(name, _this.state.fields[name].value)]);
         }, []));
-      }, _this.handleSubmit = function (isValid) {
-        var onSubmit = _this.props.onSubmit;
-
+      }, _this.handleSubmit = function () {
         if (_this.valid) {
-          return onSubmit && onSubmit(_this.values);
+          var submission = _this.props.onSubmit && _this.props.onSubmit(_this.values);
+          var isAsync = submission && typeof submission.then === 'function';
+          if (isAsync) {
+            _this.setState({
+              submitting: true,
+              submitSuccess: null,
+              submitFailure: null
+            });
+          }
+          // force submission into promise.
+          return Promise.resolve(submission);
         } else {
           return Promise.reject(new Error('Form is invalid'));
         }
-      }, _this.handleSubmission = function (submission) {
-        var isAsync = submission && typeof submission.then === 'function';
-        if (isAsync) {
-          _this.setState({
-            submitting: true,
-            submitSuccess: null,
-            submitFailure: null
-          });
-        }
-        // force submission into promise.
-        return Promise.resolve(submission);
       }, _this.handleSubmitSuccess = function () {
         _this.setState({
           submitting: false,
@@ -372,7 +369,7 @@
       }, _this.submit = function () {
         return Promise
         // validate form before submitting.
-        .resolve(_this.validateForm()).then(_this.handleSubmit).then(_this.handleSubmission).then(_this.handleSubmitSuccess).catch(_this.handleSubmitFailure);
+        .resolve(_this.validateForm()).then(_this.handleSubmit).then(_this.handleSubmitSuccess).catch(_this.handleSubmitFailure);
       }, _this.reset = function () {
         Object.keys(_this.state.fields).forEach(function (name) {
           return _this.resetField(name);
