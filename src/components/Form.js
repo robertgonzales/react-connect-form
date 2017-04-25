@@ -364,26 +364,22 @@ export default class Form extends Component {
 
   // form hooks
 
-  handleSubmit = (isValid) => {
-    const { onSubmit } = this.props
+  handleSubmit = () => {
     if (this.valid) {
-      return onSubmit && onSubmit(this.values)
+      const submission = this.props.onSubmit && this.props.onSubmit(this.values)
+      const isAsync = submission && typeof submission.then === 'function'
+      if (isAsync) {
+        this.setState({
+          submitting: true,
+          submitSuccess: null,
+          submitFailure: null
+        })
+      }
+      // force submission into promise.
+      return Promise.resolve(submission)
     } else {
       return Promise.reject(new Error('Form is invalid'))
     }
-  }
-
-  handleSubmission = (submission) => {
-    const isAsync = submission && typeof submission.then === 'function'
-    if (isAsync) {
-      this.setState({
-        submitting: true,
-        submitSuccess: null,
-        submitFailure: null
-      })
-    }
-    // force submission into promise.
-    return Promise.resolve(submission)
   }
 
   handleSubmitSuccess = () => {
@@ -411,7 +407,6 @@ export default class Form extends Component {
       // validate form before submitting.
       .resolve(this.validateForm())
       .then(this.handleSubmit)
-      .then(this.handleSubmission)
       .then(this.handleSubmitSuccess)
       .catch(this.handleSubmitFailure)
   }
