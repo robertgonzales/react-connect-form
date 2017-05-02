@@ -52,6 +52,8 @@ export default class Form extends Component {
         focusField: this.focusField,
         blurField: this.blurField,
         submitting: this.state.submitting,
+        submitFailure: this.state.submitFailure,
+        submitSuccess: this.state.submitSuccess,
         fields: this.state.fields,
         pristine: this.pristine,
         focused: this.focused,
