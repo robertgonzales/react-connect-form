@@ -135,6 +135,15 @@
         submitSuccess: null
       }, _this.validators = {}, _this.initialValues = {}, _this.cancelOnUnmount = function (promise) {
         return (0, _utils.cancelPromise)(promise, _this._isUnmounted);
+      }, _this.handleChange = function () {
+        _this.props.onChange && _this.props.onChange({
+          pristine: _this.pristine,
+          touched: _this.touched,
+          valid: _this.valid,
+          focused: _this.focused,
+          values: _this.values,
+          errors: _this.errors
+        });
       }, _this.registerField = function (name, fieldProps) {
         _this.validators[name] = (0, _utils.getValidators)(fieldProps);
         _this.setState(function (prevState) {
@@ -224,8 +233,6 @@
           if (prevField.errors.length) {
             _this.validateField(name, value);
           }
-          // FIXME: just testing!
-          _this.props.onChange && _this.props.onChange(_extends({}, _this.values, _defineProperty({}, name, value)));
           return {
             fields: _extends({}, prevState.fields, _defineProperty({}, name, _extends({}, prevField, {
               value: value,
@@ -234,7 +241,7 @@
               pristine: _this.initialValues[name] === value
             })))
           };
-        });
+        }, _this.handleChange);
       }, _this.focusField = function (name) {
         _this.setState(function (prevState) {
           return {
