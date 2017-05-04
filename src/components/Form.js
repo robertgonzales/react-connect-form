@@ -123,6 +123,17 @@ export default class Form extends Component {
     return this.context._form ? 'div' : 'form'
   }
 
+  handleChange = () => {
+    this.props.onChange && this.props.onChange({
+      pristine: this.pristine,
+      touched: this.touched,
+      valid: this.valid,
+      focused: this.focused,
+      values: this.values,
+      errors: this.errors
+    })
+  }
+
   registerField = (name, fieldProps) => {
     this.validators[name] = getValidators(fieldProps)
     this.setState(prevState => {
@@ -233,8 +244,6 @@ export default class Form extends Component {
       if (prevField.errors.length) {
         this.validateField(name, value)
       }
-      // FIXME: just testing!
-      this.props.onChange && this.props.onChange({ ...this.values, [name]: value })
       return {
         fields: {
           ...prevState.fields,
@@ -247,7 +256,7 @@ export default class Form extends Component {
           }
         }
       }
-    })
+    }, this.handleChange)
   }
 
   focusField = (name) => {
