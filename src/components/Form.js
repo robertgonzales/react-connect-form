@@ -123,15 +123,40 @@ export default class Form extends Component {
     return this.context._form ? 'div' : 'form'
   }
 
-  handleChange = () => {
-    this.props.onChange && this.props.onChange({
-      pristine: this.pristine,
-      touched: this.touched,
-      valid: this.valid,
-      focused: this.focused,
-      values: this.values,
-      errors: this.errors
-    })
+  handleChange = (prev) => {
+    this.props.onChange && this.props.onChange({...this.values})
+    if (this.props.onPristine && prev.pristine != this.pristine) {
+      this.props.onPristine(this.pristine)
+    }
+    if (this.props.onTouched && prev.touched != this.touched) {
+      this.props.onTouched(this.touched)
+    }
+    if (this.props.onValid && prev.valid != this.valid) {
+      this.props.onValid(this.valid)
+    }
+    if (this.props.onFocused && prev.focused != this.focused) {
+      this.props.onFocused(this.focused)
+    }
+    // TODO: field validation only occurs after form attempts submit
+    // TODO: besieds that, validation is async so prev and current error values are always the same
+    if (this.props.onErrors) {
+      const errorsChanged = (()=> {
+        for (let key in {...prev.errors, ...this.errors}) {
+          if (prev.errors.hasOwnProperty(key) && this.errors.hasOwnProperty(key)) {
+            prev.errors[key].forEach((error)=> {
+              if (!this.errors[key].find((this_error)=> { return error == this_error})) {
+                return true
+              }
+            })
+          } else {
+            return true
+          }
+        }
+      })()
+      if (errorsChanged) {
+        this.props.onErrors(this.errors)
+      }
+    }
   }
 
   registerField = (name, fieldProps) => {
@@ -237,6 +262,14 @@ export default class Form extends Component {
   }
 
   changeField = (name, event) => {
+    const prevComputedValues = {
+      pristine: this.pristine,
+      touched: this.touched,
+      valid: this.valid,
+      focused: this.focused,
+      values: this.values,
+      errors: this.errors
+    }
     this.setState(prevState => {
       const prevField = prevState.fields[name]
       const value = getNextValue(event, prevField)
@@ -256,7 +289,9 @@ export default class Form extends Component {
           }
         }
       }
-    }, this.handleChange)
+    }, ()=> {
+      this.handleChange(prevComputedValues)
+    })
   }
 
   focusField = (name) => {
