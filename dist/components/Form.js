@@ -52,6 +52,12 @@
     return obj;
   }
 
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  };
+
   var _extends = Object.assign || function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
@@ -135,15 +141,50 @@
         submitSuccess: null
       }, _this.validators = {}, _this.initialValues = {}, _this.cancelOnUnmount = function (promise) {
         return (0, _utils.cancelPromise)(promise, _this._isUnmounted);
-      }, _this.handleChange = function () {
-        _this.props.onChange && _this.props.onChange({
-          pristine: _this.pristine,
-          touched: _this.touched,
-          valid: _this.valid,
-          focused: _this.focused,
-          values: _this.values,
-          errors: _this.errors
-        });
+      }, _this.handleChange = function (prev) {
+        _this.props.onChange && _this.props.onChange(_extends({}, _this.values));
+        if (_this.props.onPristine && prev.pristine != _this.pristine) {
+          _this.props.onPristine(_this.pristine);
+        }
+        if (_this.props.onTouched && prev.touched != _this.touched) {
+          _this.props.onTouched(_this.touched);
+        }
+        if (_this.props.onValid && prev.valid != _this.valid) {
+          _this.props.onValid(_this.valid);
+        }
+        if (_this.props.onFocused && prev.focused != _this.focused) {
+          _this.props.onFocused(_this.focused);
+        }
+        // TODO: field validation only occurs after form attempts submit
+        // TODO: besieds that, validation is async so prev and current error values are always the same
+        if (_this.props.onErrors) {
+          var errorsChanged = function () {
+            var _loop = function _loop(key) {
+              if (prev.errors.hasOwnProperty(key) && _this.errors.hasOwnProperty(key)) {
+                prev.errors[key].forEach(function (error) {
+                  if (!_this.errors[key].find(function (this_error) {
+                    return error == this_error;
+                  })) {
+                    return true;
+                  }
+                });
+              } else {
+                return {
+                  v: true
+                };
+              }
+            };
+
+            for (var key in _extends({}, prev.errors, _this.errors)) {
+              var _ret2 = _loop(key);
+
+              if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
+            }
+          }();
+          if (errorsChanged) {
+            _this.props.onErrors(_this.errors);
+          }
+        }
       }, _this.registerField = function (name, fieldProps) {
         _this.validators[name] = (0, _utils.getValidators)(fieldProps);
         _this.setState(function (prevState) {
@@ -226,6 +267,14 @@
           };
         });
       }, _this.changeField = function (name, event) {
+        var prevComputedValues = {
+          pristine: _this.pristine,
+          touched: _this.touched,
+          valid: _this.valid,
+          focused: _this.focused,
+          values: _this.values,
+          errors: _this.errors
+        };
         _this.setState(function (prevState) {
           var prevField = prevState.fields[name];
           var value = (0, _utils.getNextValue)(event, prevField);
@@ -241,7 +290,9 @@
               pristine: _this.initialValues[name] === value
             })))
           };
-        }, _this.handleChange);
+        }, function () {
+          _this.handleChange(prevComputedValues);
+        });
       }, _this.focusField = function (name) {
         _this.setState(function (prevState) {
           return {
