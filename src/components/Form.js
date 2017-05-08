@@ -52,6 +52,8 @@ export default class Form extends Component {
         focusField: this.focusField,
         blurField: this.blurField,
         submitting: this.state.submitting,
+        submitFailure: this.state.submitFailure,
+        submitSuccess: this.state.submitSuccess,
         fields: this.state.fields,
         pristine: this.pristine,
         focused: this.focused,
@@ -119,6 +121,42 @@ export default class Form extends Component {
 
   get element () {
     return this.context._form ? 'div' : 'form'
+  }
+
+  handleChange = (prev) => {
+    this.props.onChange && this.props.onChange({...this.values})
+    if (this.props.onPristine && prev.pristine != this.pristine) {
+      this.props.onPristine(this.pristine)
+    }
+    if (this.props.onTouched && prev.touched != this.touched) {
+      this.props.onTouched(this.touched)
+    }
+    if (this.props.onValid && prev.valid != this.valid) {
+      this.props.onValid(this.valid)
+    }
+    if (this.props.onFocused && prev.focused != this.focused) {
+      this.props.onFocused(this.focused)
+    }
+    // TODO: field validation only occurs after form attempts submit
+    // TODO: besieds that, validation is async so prev and current error values are always the same
+    if (this.props.onErrors) {
+      const errorsChanged = (()=> {
+        for (let key in {...prev.errors, ...this.errors}) {
+          if (prev.errors.hasOwnProperty(key) && this.errors.hasOwnProperty(key)) {
+            prev.errors[key].forEach((error)=> {
+              if (!this.errors[key].find((this_error)=> { return error == this_error})) {
+                return true
+              }
+            })
+          } else {
+            return true
+          }
+        }
+      })()
+      if (errorsChanged) {
+        this.props.onErrors(this.errors)
+      }
+    }
   }
 
   registerField = (name, fieldProps) => {
@@ -224,6 +262,14 @@ export default class Form extends Component {
   }
 
   changeField = (name, event) => {
+    const prevComputedValues = {
+      pristine: this.pristine,
+      touched: this.touched,
+      valid: this.valid,
+      focused: this.focused,
+      values: this.values,
+      errors: this.errors
+    }
     this.setState(prevState => {
       const prevField = prevState.fields[name]
       const value = getNextValue(event, prevField)
@@ -231,8 +277,6 @@ export default class Form extends Component {
       if (prevField.errors.length) {
         this.validateField(name, value)
       }
-      // FIXME: just testing!
-      this.props.onChange && this.props.onChange({ ...this.values, [name]: value })
       return {
         fields: {
           ...prevState.fields,
@@ -245,6 +289,8 @@ export default class Form extends Component {
           }
         }
       }
+    }, ()=> {
+      this.handleChange(prevComputedValues)
     })
   }
 
@@ -364,26 +410,22 @@ export default class Form extends Component {
 
   // form hooks
 
-  handleSubmit = (isValid) => {
-    const { onSubmit } = this.props
+  handleSubmit = () => {
     if (this.valid) {
-      return onSubmit && onSubmit(this.values)
+      const submission = this.props.onSubmit && this.props.onSubmit(this.values)
+      const isAsync = submission && typeof submission.then === 'function'
+      if (isAsync) {
+        this.setState({
+          submitting: true,
+          submitSuccess: null,
+          submitFailure: null
+        })
+      }
+      // force submission into promise.
+      this.cancelOnUnmount(Promise.resolve(submission))
     } else {
       return Promise.reject(new Error('Form is invalid'))
     }
-  }
-
-  handleSubmission = (submission) => {
-    const isAsync = submission && typeof submission.then === 'function'
-    if (isAsync) {
-      this.setState({
-        submitting: true,
-        submitSuccess: null,
-        submitFailure: null
-      })
-    }
-    // force submission into promise.
-    return this.cancelOnUnmount(Promise.resolve(submission))
   }
 
   handleSubmitSuccess = () => {
@@ -414,7 +456,6 @@ export default class Form extends Component {
       // validate form before submitting.
       .resolve(this.validateForm())
       .then(this.handleSubmit)
-      .then(this.handleSubmission)
       .then(this.handleSubmitSuccess)
       .catch(this.handleSubmitFailure)
   }
