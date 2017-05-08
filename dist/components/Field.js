@@ -210,7 +210,7 @@
           }
           return this.props.value;
         }
-        if (this.props.type === 'text' || this.props.type === 'email') {
+        if (this.props.type === 'text' || this.props.type === 'email' || this.props.type === 'password') {
           return this.field.value || '';
         }
         return this.field.value;

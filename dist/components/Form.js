@@ -134,7 +134,7 @@
         submitFailure: null,
         submitSuccess: null
       }, _this.validators = {}, _this.initialValues = {}, _this.cancelOnUnmount = function (promise) {
-        return (0, _utils.cancelPromise)(promise, _this._isUnmounted);
+        return (0, _utils.cancelPromise)(promise, _this._isUnmounted, { unmounted: true });
       }, _this.registerField = function (name, fieldProps) {
         _this.validators[name] = (0, _utils.getValidators)(fieldProps);
         _this.setState(function (prevState) {
@@ -352,7 +352,7 @@
           });
         }
         // force submission into promise.
-        return Promise.resolve(submission);
+        return _this.cancelOnUnmount(Promise.resolve(submission));
       }, _this.handleSubmitSuccess = function () {
         _this.setState({
           submitting: false,
@@ -362,13 +362,15 @@
           _this.props.onSubmitSuccess();
         });
       }, _this.handleSubmitFailure = function (err) {
-        _this.setState({
-          submitting: false,
-          submitSuccess: false,
-          submitFailure: err ? err.message || err : null
-        }, function () {
-          _this.props.onSubmitFailure(err);
-        });
+        if (!err.unmounted) {
+          _this.setState({
+            submitting: false,
+            submitSuccess: false,
+            submitFailure: err ? err.message || err : null
+          }, function () {
+            _this.props.onSubmitFailure(err);
+          });
+        }
       }, _this.submit = function () {
         return Promise
         // validate form before submitting.

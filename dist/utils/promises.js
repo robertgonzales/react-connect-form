@@ -25,13 +25,13 @@
   };
 
   // returns promise that can be canceled
-  var cancelPromise = exports.cancelPromise = function cancelPromise(promise, cancel) {
+  var cancelPromise = exports.cancelPromise = function cancelPromise(promise, cancel, error) {
     return new Promise(function (resolve, reject) {
       promise.then(function (val) {
-        return cancel ? reject({ canceled: true }) : resolve(val);
+        return cancel ? reject(error) : resolve(val);
       });
-      promise.catch(function (error) {
-        return cancel ? reject({ canceled: true }) : reject(error);
+      promise.catch(function (err) {
+        return cancel ? reject(error) : reject(err);
       });
     });
   };

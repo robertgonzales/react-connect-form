@@ -52,8 +52,8 @@
     "standard": "^9.0.1"
   },
   "peerDependencies": {
-    "react": "~0.14.8 || ^15.0.0",
-    "react-dom": "~0.14.8 || ^15.0.0"
+    "react": "^15.5.0",
+    "react-dom": "^15.5.0"
   },
   "dependencies": {
     "object-assign": "^4.1.1"

@@ -1,25 +1,38 @@
-# React Controlled Form
+```jsx
+import { Form, Field, Submit, validators } from 'react-controlled-form'
 
-### TODO
-- add dist to .gitignore (and delete dist)
+const { isMinLength, isEmail } = validators
+const isUniqueEmail = (value) => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      if (value === 'robert@gmail.com') {
+        resolve("Email is already taken")
+      } else {
+        resolve()
+      }
+    }, 500)
+  })
+}
 
-### possible names:
-- react-former
-  + short, simple
-- react-controlled-form
-  + accurate
-  - long
-- react-form5
-  + short, simple, html5 reference
-  - numbered
-- react-form-ui
-  - sounds like styling
-- react-form-controller
-  - sounds like mvc
-- react-form-dom
-  + simple name
-  - would need native lib too
-
-
-### Taglines
-- easily turn html5 forms into controlled components
+<Form>
+  <Field
+    name="first_name"
+    type="text"
+    placeholder="First name"
+    validators={[isMinLength(2)]}
+  />
+  <Field
+    name="last_name"
+    type="text"
+    placeholder="Last name"
+    validators={[isMinLength(2)]}
+  />
+  <Field
+    name="email"
+    type="text"
+    placeholder="Email"
+    validators={[isEmail, isUniqueEmail]}
+  />
+  <Submit>Submit</Submit>
+</Form>
+```
