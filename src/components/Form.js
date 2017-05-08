@@ -82,7 +82,7 @@ export default class Form extends Component {
   }
 
   cancelOnUnmount = (promise) => {
-    return cancelPromise(promise, this._isUnmounted)
+    return cancelPromise(promise, this._isUnmounted, { unmounted: true })
   }
 
   get pristine () {
@@ -383,7 +383,7 @@ export default class Form extends Component {
       })
     }
     // force submission into promise.
-    return Promise.resolve(submission)
+    return this.cancelOnUnmount(Promise.resolve(submission))
   }
 
   handleSubmitSuccess = () => {
@@ -396,14 +396,17 @@ export default class Form extends Component {
     })
   }
 
+  // TODO: better name for method (submission can be success and Form is simply unmounted)
   handleSubmitFailure = (err) => {
-    this.setState({
-      submitting: false,
-      submitSuccess: false,
-      submitFailure: err ? err.message || err : null
-    }, () => {
-      this.props.onSubmitFailure(err)
-    })
+    if (!err.unmounted) {
+      this.setState({
+        submitting: false,
+        submitSuccess: false,
+        submitFailure: err ? err.message || err : null
+      }, () => {
+        this.props.onSubmitFailure(err)
+      })
+    }
   }
 
   submit = () => {
