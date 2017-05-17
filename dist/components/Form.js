@@ -190,7 +190,7 @@
         _this.setState(function (prevState) {
           var prevField = prevState.fields[name];
           // recalculate initial values
-          if (_this.props.initialValues[name]) {
+          if (_this.props.initialValues.hasOwnProperty(name)) {
             _this.initialValues[name] = _this.props.initialValues[name];
           } else {
             _this.initialValues[name] = (0, _utils.getInitialValue)(prevField, fieldProps);
@@ -251,7 +251,7 @@
       }, _this.resetField = function (name, fieldProps) {
         _this.setState(function (prevState) {
           var prevField = prevState.fields[name];
-          if (_this.props.initialValues[name]) {
+          if (_this.props.initialValues.hasOwnProperty(name)) {
             _this.initialValues[name] = _this.props.initialValues[name];
           } else if (fieldProps) {
             _this.initialValues[name] = (0, _utils.getInitialValue)(prevField, fieldProps);

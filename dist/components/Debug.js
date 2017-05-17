@@ -92,6 +92,9 @@
   };
 
   var getChanges = function getChanges(prev, next) {
+    if (!prev) {
+      return;
+    }
     if (!Object.keys(prev).length) {
       return;
     }
