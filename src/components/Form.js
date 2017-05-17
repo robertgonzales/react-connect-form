@@ -164,7 +164,7 @@ export default class Form extends Component {
     this.setState(prevState => {
       const prevField = prevState.fields[name]
       // recalculate initial values
-      if (this.props.initialValues[name]) {
+      if (this.props.initialValues.hasOwnProperty(name)) {
         this.initialValues[name] = this.props.initialValues[name]
       } else {
         this.initialValues[name] = getInitialValue(prevField, fieldProps)
@@ -240,7 +240,7 @@ export default class Form extends Component {
   resetField = (name, fieldProps) => {
     this.setState(prevState => {
       const prevField = prevState.fields[name]
-      if (this.props.initialValues[name]) {
+      if (this.props.initialValues.hasOwnProperty(name)) {
         this.initialValues[name] = this.props.initialValues[name]
       } else if (fieldProps) {
         this.initialValues[name] = getInitialValue(prevField, fieldProps)
