@@ -1,6 +1,9 @@
 import React, { Component, PropTypes } from 'react'
 
 const getChanges = (prev, next) => {
+  if (!prev) {
+    return
+  }
   if (!Object.keys(prev).length) {
     return
   }
