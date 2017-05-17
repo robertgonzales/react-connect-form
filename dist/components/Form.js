@@ -468,7 +468,7 @@
       value: function componentWillReceiveProps(nextProps) {
         var _this2 = this;
 
-        if (nextProps.initialValues !== this.props.initialValues) {
+        if (!(0, _utils.deepEqual)(nextProps.initialValues, this.props.initialValues)) {
           Object.keys(nextProps.initialValues).forEach(function (name) {
             _this2.resetField(name, nextProps.initialValues[name]);
           });

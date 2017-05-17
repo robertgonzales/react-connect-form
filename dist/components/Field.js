@@ -146,7 +146,7 @@
           this.context._form.unregisterField(this.props.name, this.props);
           this.context._form.registerField(nextProps.name, nextProps);
         }
-        if (nextProps.initialValue !== this.props.initialValue || nextProps.initialChecked !== this.props.initialChecked) {
+        if (!(0, _utils.deepEqual)(nextProps.initialValue, this.props.initialValue) || nextProps.initialChecked !== this.props.initialChecked) {
           this.context._form.resetField(nextProps.name, nextProps);
         }
       }

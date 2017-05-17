@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react'
 import {
+  deepEqual,
   cancelPromise,
   reflectPromise,
   getNextValue,
@@ -68,7 +69,7 @@ export default class Form extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    if (nextProps.initialValues !== this.props.initialValues) {
+    if (!deepEqual(nextProps.initialValues, this.props.initialValues)) {
       Object.keys(nextProps.initialValues).forEach(name => {
         this.resetField(name, nextProps.initialValues[name])
       })

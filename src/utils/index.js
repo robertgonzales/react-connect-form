@@ -12,6 +12,7 @@ export {
   getDecrementValue,
   getValidators
 } from './values'
+export deepEqual from 'deep-equal'
 
 // async function validateField(name, value) {
 //   if (!this.shouldFieldValidate(name, value)) {

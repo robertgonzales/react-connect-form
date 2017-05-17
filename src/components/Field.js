@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react'
-import { getEventValue } from '../utils'
+import { deepEqual, getEventValue } from '../utils'
 
 export default class Field extends Component {
   static displayName = 'Field'
@@ -44,7 +44,7 @@ export default class Field extends Component {
       this.context._form.unregisterField(this.props.name, this.props)
       this.context._form.registerField(nextProps.name, nextProps)
     }
-    if (nextProps.initialValue !== this.props.initialValue ||
+    if (!deepEqual(nextProps.initialValue, this.props.initialValue) ||
         nextProps.initialChecked !== this.props.initialChecked) {
       this.context._form.resetField(nextProps.name, nextProps)
     }
