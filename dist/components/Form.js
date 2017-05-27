@@ -364,9 +364,11 @@
           Promise.resolve();
         }
       }, _this.shouldFieldValidate = function (name, nextValue) {
-        var validated = _this.state.fields[name].validated;
+        var _this$state$fields$na = _this.state.fields[name],
+            validated = _this$state$fields$na.validated,
+            pristine = _this$state$fields$na.pristine;
 
-        if (validated) return false;
+        if (!pristine && validated) return false;
         return true;
       }, _this.runFieldValidations = function (name, value) {
         return _this.validators[name].reduce(function (errors, validator) {

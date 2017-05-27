@@ -16,7 +16,6 @@
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-
   // returns promise that converts error into successful resolution
   var reflectPromise = exports.reflectPromise = function reflectPromise(promise) {
     return promise.catch(function (err) {
