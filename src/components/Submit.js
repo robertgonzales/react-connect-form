@@ -39,13 +39,15 @@ export default class Submit extends Component {
       ...rest,
       type: 'submit',
       onClick: this.handleClick,
-      disabled: submitting || !valid || pristine
+      disabled: submitting || pristine
     }
     const passProps = {
       ...inputProps,
       submitSuccess,
       submitFailure,
-      submitting
+      submitting,
+      pristine,
+      valid
     }
     if (component) {
       if (component === 'button') {

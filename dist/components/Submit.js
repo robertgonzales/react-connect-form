@@ -133,12 +133,14 @@
         var inputProps = _extends({}, rest, {
           type: 'submit',
           onClick: this.handleClick,
-          disabled: submitting || !valid || pristine
+          disabled: submitting || pristine
         });
         var passProps = _extends({}, inputProps, {
           submitSuccess: submitSuccess,
           submitFailure: submitFailure,
-          submitting: submitting
+          submitting: submitting,
+          pristine: pristine,
+          valid: valid
         });
         if (component) {
           if (component === 'button') {
