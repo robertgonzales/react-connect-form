@@ -46,7 +46,7 @@ export const isUrl = (value, values) => {
 
 // curried validators
 
-export const isLength = (length) => {
+export const isLength = length => {
   return (value, values) => {
     if (exists(value) && !empty(value) && value.length !== length) {
       return `Requires ${length} chars`
@@ -54,7 +54,7 @@ export const isLength = (length) => {
   }
 }
 
-export const isMinLength = (length) => {
+export const isMinLength = length => {
   return (value, values) => {
     if (exists(value) && !empty(value) && value.length < length) {
       return `Min ${length} chars`
@@ -62,7 +62,7 @@ export const isMinLength = (length) => {
   }
 }
 
-export const isMaxLength = (length) => {
+export const isMaxLength = length => {
   return (value, values) => {
     if (exists(value) && !empty(value) && value.length > length) {
       return `Max ${length} chars`

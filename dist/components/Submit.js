@@ -127,12 +127,13 @@
             submitSuccess = _context$_form.submitSuccess,
             submitFailure = _context$_form.submitFailure,
             submitting = _context$_form.submitting,
+            pristine = _context$_form.pristine,
             valid = _context$_form.valid;
 
         var inputProps = _extends({}, rest, {
           type: 'submit',
           onClick: this.handleClick,
-          disabled: submitting || !valid
+          disabled: submitting || !valid || pristine
         });
         var passProps = _extends({}, inputProps, {
           submitSuccess: submitSuccess,

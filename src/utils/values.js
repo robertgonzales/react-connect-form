@@ -1,12 +1,12 @@
 import { isRequired } from './validators'
 
-export const valueIsEvent = (e) => {
+export const valueIsEvent = e => {
   return !!(e && e.stopPropagation && e.preventDefault)
 }
 
 const getCheckboxValue = (propValue, formField) => {
   if (formField.count > 1) {
-    let fieldValue = formField.value ? [ ...formField.value ] : []
+    let fieldValue = formField.value ? [...formField.value] : []
     const index = fieldValue.indexOf(propValue)
     if (index < 0) {
       fieldValue.push(propValue)
@@ -28,7 +28,7 @@ export const getNextValue = (eventValue, formField = {}) => {
 
 export const getDecrementValue = (formField, fieldProps) => {
   if (formField.type === 'checkbox') {
-    const fieldValue = [ ...formField.value ]
+    const fieldValue = [...formField.value]
     const index = fieldValue.indexOf(fieldProps.value)
     if (index > -1) {
       fieldValue.splice(index, 1)
@@ -46,8 +46,7 @@ export const getDecrementValue = (formField, fieldProps) => {
 export const getEventValue = (event, fieldProps) => {
   const { type, value, multiple } = fieldProps
   if (valueIsEvent(event)) {
-    if (type === 'radio' ||
-        type === 'checkbox') {
+    if (type === 'radio' || type === 'checkbox') {
       if (value === undefined) {
         return !!event.target.checked
       }
@@ -94,7 +93,7 @@ export const getInitialValue = (formField = {}, fieldProps) => {
   return initialValue
 }
 
-export const getValidators = (fieldProps) => {
+export const getValidators = fieldProps => {
   if (fieldProps.required) {
     return [...fieldProps.validators, isRequired]
   }

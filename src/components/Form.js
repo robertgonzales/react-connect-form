@@ -6,7 +6,7 @@ import {
   getNextValue,
   getValidators,
   getInitialValue,
-  getDecrementValue,
+  getDecrementValue
 } from '../utils'
 
 export default class Form extends Component {
@@ -25,9 +25,9 @@ export default class Form extends Component {
 
   static defaultProps = {
     initialValues: {},
-    onSubmit: (e) => console.log('onSubmit', e),
-    onSubmitSuccess: (e) => console.log('onSubmitSuccess', e),
-    onSubmitFailure: (e) => console.log('onSubmitFailure', e)
+    onSubmit: e => console.log('onSubmit', e),
+    onSubmitSuccess: e => console.log('onSubmitSuccess', e),
+    onSubmitFailure: e => console.log('onSubmitFailure', e)
   }
 
   static childContextTypes = {
@@ -43,7 +43,7 @@ export default class Form extends Component {
   validators = {}
   initialValues = {}
 
-  getChildContext () {
+  getChildContext() {
     return {
       _form: {
         unregisterField: this.unregisterField,
@@ -68,7 +68,7 @@ export default class Form extends Component {
     }
   }
 
-  componentWillReceiveProps (nextProps) {
+  componentWillReceiveProps(nextProps) {
     if (!deepEqual(nextProps.initialValues, this.props.initialValues)) {
       Object.keys(nextProps.initialValues).forEach(name => {
         this.resetField(name, nextProps.initialValues[name])
@@ -76,42 +76,46 @@ export default class Form extends Component {
     }
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this._isUnmounted = false
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     this._isUnmounted = true
   }
 
-  cancelOnUnmount = (promise) => {
+  cancelOnUnmount = promise => {
     return cancelPromise(promise, this._isUnmounted, { unmounted: true })
   }
 
-  get pristine () {
+  get pristine() {
     return Object.values(this.state.fields).every(field => field.pristine)
   }
 
-  get touched () {
+  get touched() {
     return Object.values(this.state.fields).some(field => field.touched)
   }
 
-  get valid () {
-    return Object.values(this.state.fields).every(field => field.errors.length < 1)
+  get valid() {
+    return Object.values(this.state.fields).every(
+      field => field.errors.length < 1
+    )
   }
 
-  get focused () {
-    return Object.keys(this.state.fields).find(name => this.state.fields[name].focused)
+  get focused() {
+    return Object.keys(this.state.fields).find(
+      name => this.state.fields[name].focused
+    )
   }
 
-  get values () {
+  get values() {
     return Object.keys(this.state.fields).reduce((values, name) => {
       values[name] = this.state.fields[name].value
       return values
     }, {})
   }
 
-  get errors () {
+  get errors() {
     return Object.keys(this.state.fields).reduce((errors, name) => {
       if (this.state.fields[name].errors.length) {
         errors[name] = this.state.fields[name].errors
@@ -120,12 +124,12 @@ export default class Form extends Component {
     }, {})
   }
 
-  get element () {
+  get element() {
     return this.context._form ? 'div' : 'form'
   }
 
-  handleChange = (prev) => {
-    this.props.onChange && this.props.onChange({...this.values})
+  handleChange = prev => {
+    this.props.onChange && this.props.onChange({ ...this.values })
     if (this.props.onPristine && prev.pristine != this.pristine) {
       this.props.onPristine(this.pristine)
     }
@@ -141,11 +145,18 @@ export default class Form extends Component {
     // TODO: field validation only occurs after form attempts submit
     // TODO: besieds that, validation is async so prev and current error values are always the same
     if (this.props.onErrors) {
-      const errorsChanged = (()=> {
-        for (let key in {...prev.errors, ...this.errors}) {
-          if (prev.errors.hasOwnProperty(key) && this.errors.hasOwnProperty(key)) {
-            prev.errors[key].forEach((error)=> {
-              if (!this.errors[key].find((this_error)=> { return error == this_error})) {
+      const errorsChanged = (() => {
+        for (let key in { ...prev.errors, ...this.errors }) {
+          if (
+            prev.errors.hasOwnProperty(key) &&
+            this.errors.hasOwnProperty(key)
+          ) {
+            prev.errors[key].forEach(error => {
+              if (
+                !this.errors[key].find(this_error => {
+                  return error == this_error
+                })
+              ) {
                 return true
               }
             })
@@ -183,7 +194,7 @@ export default class Form extends Component {
             }
           }
         }
-      // create new field namespace.
+        // create new field namespace.
       } else {
         return {
           fields: {
@@ -222,7 +233,7 @@ export default class Form extends Component {
             }
           }
         }
-      // only one field registered to name.
+        // only one field registered to name.
       } else {
         delete this.validators[name]
         delete this.initialValues[name]
@@ -271,31 +282,34 @@ export default class Form extends Component {
       values: this.values,
       errors: this.errors
     }
-    this.setState(prevState => {
-      const prevField = prevState.fields[name]
-      const value = getNextValue(event, prevField)
-      // TODO: ensure this is actually merging setStates
-      if (prevField.errors.length) {
-        this.validateField(name, value)
-      }
-      return {
-        fields: {
-          ...prevState.fields,
-          [name]: {
-            ...prevField,
-            value: value,
-            touched: true,
-            validated: value === prevField.value,
-            pristine: this.initialValues[name] === value
+    this.setState(
+      prevState => {
+        const prevField = prevState.fields[name]
+        const value = getNextValue(event, prevField)
+        // TODO: ensure this is actually merging setStates
+        if (prevField.errors.length) {
+          this.validateField(name, value)
+        }
+        return {
+          fields: {
+            ...prevState.fields,
+            [name]: {
+              ...prevField,
+              value: value,
+              touched: true,
+              validated: value === prevField.value,
+              pristine: this.initialValues[name] === value
+            }
           }
         }
+      },
+      () => {
+        this.handleChange(prevComputedValues)
       }
-    }, ()=> {
-      this.handleChange(prevComputedValues)
-    })
+    )
   }
 
-  focusField = (name) => {
+  focusField = name => {
     this.setState(prevState => {
       return {
         fields: {
@@ -309,7 +323,7 @@ export default class Form extends Component {
     })
   }
 
-  blurField = (name) => {
+  blurField = name => {
     this.setState(prevState => {
       return {
         fields: {
@@ -366,34 +380,41 @@ export default class Form extends Component {
       }
       // wait for all errors to resolve.
       // cancel if errors resolve after unmount.
-      return this.cancelOnUnmount(Promise.all(reflectErrors))
-        // update field after errors resolve.
-        .then(errors => this.warnField(name, [...errors, ...syncErrors], false))
+      return (
+        this.cancelOnUnmount(Promise.all(reflectErrors))
+          // update field after errors resolve.
+          .then(errors =>
+            this.warnField(name, [...errors, ...syncErrors], false)
+          )
+      )
     } else {
       Promise.resolve()
     }
   }
 
   shouldFieldValidate = (name, nextValue) => {
-    const { validated } = this.state.fields[name]
-    if (validated) return false
+    const { validated, pristine } = this.state.fields[name]
+    if (!pristine && validated) return false
     return true
   }
 
   runFieldValidations = (name, value) => {
-    return this.validators[name].reduce((errors, validator) => {
-      let err = validator(value, this.values)
-      if (!err) {
+    return this.validators[name].reduce(
+      (errors, validator) => {
+        let err = validator(value, this.values)
+        if (!err) {
+          return errors
+        } else if (typeof err === 'string' || err instanceof Error) {
+          errors.syncErrors.push(err)
+        } else if (typeof err.then === 'function') {
+          errors.asyncErrors.push(err)
+        } else {
+          throw new Error('validation must return a String, Error, or Promise')
+        }
         return errors
-      } else if (typeof err === 'string' || err instanceof Error) {
-        errors.syncErrors.push(err)
-      } else if (typeof err.then === 'function') {
-        errors.asyncErrors.push(err)
-      } else {
-        throw new Error('validation must return a String, Error, or Promise')
-      }
-      return errors
-    }, { syncErrors: [], asyncErrors: [] })
+      },
+      { syncErrors: [], asyncErrors: [] }
+    )
   }
 
   validateForm = () => {
@@ -404,7 +425,10 @@ export default class Form extends Component {
       Object.keys(this.state.fields).reduce((validations, name) => {
         // each validation resolves when field was updated with latest error state.
         // should only fail to resolve if form unmounts.
-        return [...validations, this.validateField(name, this.state.fields[name].value)]
+        return [
+          ...validations,
+          this.validateField(name, this.state.fields[name].value)
+        ]
       }, [])
     )
   }
@@ -430,44 +454,54 @@ export default class Form extends Component {
   }
 
   handleSubmitSuccess = () => {
-    this.setState({
-      submitting: false,
-      submitSuccess: true,
-      submitFailure: null
-    }, () => {
-      this.props.onSubmitSuccess()
-    })
+    this.setState(
+      {
+        submitting: false,
+        submitSuccess: true,
+        submitFailure: null
+      },
+      () => {
+        this.props.onSubmitSuccess()
+      }
+    )
   }
 
   // TODO: better name for method (submission can be success and Form is simply unmounted)
-  handleSubmitFailure = (err) => {
+  handleSubmitFailure = err => {
     if (!err.unmounted) {
-      this.setState({
-        submitting: false,
-        submitSuccess: false,
-        submitFailure: err ? err.message || err : null
-      }, () => {
-        this.props.onSubmitFailure(err)
-      })
+      this.setState(
+        {
+          submitting: false,
+          submitSuccess: false,
+          submitFailure: err ? err.message || err : null
+        },
+        () => {
+          this.props.onSubmitFailure(err)
+        }
+      )
     }
   }
 
   submit = () => {
-    return Promise
-      // validate form before submitting.
-      .resolve(this.validateForm())
-      .then(this.handleSubmit)
-      .then(this.handleSubmitSuccess)
-      .catch(this.handleSubmitFailure)
+    return (
+      Promise
+        // validate form before submitting.
+        .resolve(this.validateForm())
+        .then(this.handleSubmit)
+        .then(this.handleSubmitSuccess)
+        .catch(this.handleSubmitFailure)
+    )
   }
 
   reset = () => {
     Object.keys(this.state.fields).forEach(name => this.resetField(name))
   }
 
-  render () {
+  render() {
     return React.createElement(this.element, {
-      onSubmit: (e) => { e.preventDefault() },
+      onSubmit: e => {
+        e.preventDefault()
+      },
       children: this.props.children
     })
   }

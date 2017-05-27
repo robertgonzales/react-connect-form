@@ -7,18 +7,18 @@ export default class Reset extends Component {
     _form: PropTypes.object.isRequired
   }
 
-  constructor (props, context) {
+  constructor(props, context) {
     super(props, context)
     if (!context._form) throw new Error('Reset must be inside Form')
   }
 
-  handleClick = (e) => {
+  handleClick = e => {
     this.context._form.reset()
   }
 
-  render () {
+  render() {
     return (
-      <button type='reset' onClick={this.handleClick}>
+      <button type="reset" onClick={this.handleClick}>
         {this.props.children}
       </button>
     )

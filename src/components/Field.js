@@ -24,28 +24,30 @@ export default class Field extends Component {
     validators: []
   }
 
-  constructor (props, context) {
+  constructor(props, context) {
     super(props, context)
     if (!context._form) {
       throw new Error('Field must be inside Form')
     }
   }
 
-  componentWillMount () {
+  componentWillMount() {
     this.context._form.registerField(this.props.name, this.props)
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     this.context._form.unregisterField(this.props.name, this.props)
   }
 
-  componentWillReceiveProps (nextProps) {
+  componentWillReceiveProps(nextProps) {
     if (nextProps.name !== this.props.name) {
       this.context._form.unregisterField(this.props.name, this.props)
       this.context._form.registerField(nextProps.name, nextProps)
     }
-    if (!deepEqual(nextProps.initialValue, this.props.initialValue) ||
-        nextProps.initialChecked !== this.props.initialChecked) {
+    if (
+      !deepEqual(nextProps.initialValue, this.props.initialValue) ||
+      nextProps.initialChecked !== this.props.initialChecked
+    ) {
       this.context._form.resetField(nextProps.name, nextProps)
     }
   }
@@ -59,29 +61,29 @@ export default class Field extends Component {
     )
   }
 
-  get field () {
+  get field() {
     return this.context._form.fields[this.props.name]
   }
 
-  get value () {
-    if (this.props.type === 'radio' ||
-        this.props.type === 'checkbox') {
+  get value() {
+    if (this.props.type === 'radio' || this.props.type === 'checkbox') {
       if (this.props.value === undefined) {
         return true
       }
       return this.props.value
     }
-    if (this.props.type === 'text' ||
-        this.props.type === 'email' ||
-        this.props.type === 'password') {
+    if (
+      this.props.type === 'text' ||
+      this.props.type === 'email' ||
+      this.props.type === 'password'
+    ) {
       return this.field.value || ''
     }
     return this.field.value
   }
 
-  get checked () {
-    if (this.props.type === 'radio' ||
-        this.props.type === 'checkbox') {
+  get checked() {
+    if (this.props.type === 'radio' || this.props.type === 'checkbox') {
       if (Array.isArray(this.field.value)) {
         return this.field.value.indexOf(this.value) > -1
       } else {
@@ -90,27 +92,27 @@ export default class Field extends Component {
     }
   }
 
-  get valid () {
+  get valid() {
     return this.field.errors.length < 1
   }
 
-  handleChange = (e) => {
+  handleChange = e => {
     const value = getEventValue(e, this.props)
     if (this.props.onChange && this.props.onChange(e) === false) return
     this.context._form.changeField(this.props.name, value)
   }
 
-  handleFocus = (e) => {
+  handleFocus = e => {
     if (this.props.onFocus && this.props.onFocus(e) === false) return
     this.context._form.focusField(this.props.name)
   }
 
-  handleBlur = (e) => {
+  handleBlur = e => {
     if (this.props.onBlur && this.props.onBlur(e) === false) return
     this.context._form.blurField(this.props.name)
   }
 
-  render () {
+  render() {
     if (!this.field) return null
     const {
       initialChecked,

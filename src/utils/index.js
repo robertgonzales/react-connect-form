@@ -1,9 +1,6 @@
 import './polyfills'
 export * as validators from './validators'
-export {
-  reflectPromise,
-  cancelPromise
-} from './promises'
+export { reflectPromise, cancelPromise } from './promises'
 export {
   valueIsEvent,
   getEventValue,

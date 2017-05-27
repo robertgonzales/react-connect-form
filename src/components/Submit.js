@@ -10,45 +10,42 @@ export default class Submit extends Component {
   static propTypes = {
     render: PropTypes.func,
     component: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    onClick: PropTypes.func,
+    onClick: PropTypes.func
   }
 
   static defaultProps = {
     component: 'button'
   }
 
-  constructor (props, context) {
+  constructor(props, context) {
     super(props, context)
     if (!context._form) throw new Error('Submit must be inside Form')
   }
 
-  handleClick = (e) => {
+  handleClick = e => {
     this.context._form.submit(e)
   }
 
-  render () {
-    const {
-      component,
-      render,
-      ...rest
-    } = this.props
+  render() {
+    const { component, render, ...rest } = this.props
     const {
       submitSuccess,
       submitFailure,
       submitting,
-      valid,
+      pristine,
+      valid
     } = this.context._form
     const inputProps = {
       ...rest,
       type: 'submit',
       onClick: this.handleClick,
-      disabled: submitting || !valid
+      disabled: submitting || !valid || pristine
     }
     const passProps = {
       ...inputProps,
       submitSuccess,
       submitFailure,
-      submitting,
+      submitting
     }
     if (component) {
       if (component === 'button') {

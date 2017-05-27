@@ -7,24 +7,32 @@ const getChanges = (prev, next) => {
   if (!Object.keys(prev).length) {
     return
   }
-  return Object.keys(prev).reduce((changes, key) => {
-    if (prev[key] !== next[key]) {
-      if (Array.isArray(prev[key])) {
-        if (prev[key].length !== next[key].length ||
-            prev[key].some((item, index) => item !== next[key][index])) {
-          changes.push(`\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(next[key])}`)
+  return Object.keys(prev)
+    .reduce((changes, key) => {
+      if (prev[key] !== next[key]) {
+        if (Array.isArray(prev[key])) {
+          if (
+            prev[key].length !== next[key].length ||
+            prev[key].some((item, index) => item !== next[key][index])
+          ) {
+            changes.push(
+              `\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(next[key])}`
+            )
+          }
+        } else if (typeof prev[key] === 'object') {
+          const childChanges = getChanges(prev[key], next[key])
+          if (childChanges) {
+            changes.push(key + '\n' + childChanges)
+          }
+        } else {
+          changes.push(
+            `\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(next[key])}`
+          )
         }
-      } else if (typeof prev[key] === 'object') {
-        const childChanges = getChanges(prev[key], next[key])
-        if (childChanges) {
-          changes.push(key + '\n' + childChanges)
-        }
-      } else {
-        changes.push(`\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(next[key])}`)
       }
-    }
-    return changes
-  }, []).join('\n')
+      return changes
+    }, [])
+    .join('\n')
 }
 
 export default class Debug extends Component {
@@ -45,12 +53,12 @@ export default class Debug extends Component {
     log: true
   }
 
-  constructor (props, context) {
+  constructor(props, context) {
     super(props, context)
     if (!context._form) throw new Error('Debug must be inside Form')
   }
 
-  shouldComponentUpdate (nextProps, nextState, nextContext) {
+  shouldComponentUpdate(nextProps, nextState, nextContext) {
     const nextForm = nextContext._form
     return (
       Object.keys(nextProps).some(key => nextProps[key] !== this.props[key]) ||
@@ -58,7 +66,7 @@ export default class Debug extends Component {
     )
   }
 
-  componentDidUpdate (prevProps, prevState, prevContext) {
+  componentDidUpdate(prevProps, prevState, prevContext) {
     const { fields: prevFields, ...prevForm } = prevContext._form
     const { fields: nextFields, ...nextForm } = this.context._form
     if (this.props.log) {
@@ -72,11 +80,11 @@ export default class Debug extends Component {
     }
   }
 
-  get form () {
+  get form() {
     return this.context._form
   }
 
-  render () {
+  render() {
     const { fields, ...rest } = this.form
     if (!this.props.render) {
       return null
@@ -84,13 +92,11 @@ export default class Debug extends Component {
     return (
       <pre>
         <code>
-          {this.props.name ? (
-            JSON.stringify(fields[name], null, 2)
-          ) : this.props.field ? (
-            JSON.stringify(fields, null, 2)
-          ) : (
-            JSON.stringify(rest, null, 2)
-          )}
+          {this.props.name
+            ? JSON.stringify(fields[name], null, 2)
+            : this.props.field
+                ? JSON.stringify(fields, null, 2)
+                : JSON.stringify(rest, null, 2)}
         </code>
       </pre>
     )
