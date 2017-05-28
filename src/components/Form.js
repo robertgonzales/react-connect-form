@@ -6,7 +6,7 @@ import {
   getNextValue,
   getValidators,
   getInitialValue,
-  getDecrementValue
+  getDecrementValue,
 } from '../utils'
 
 export default class Form extends Component {
@@ -16,29 +16,29 @@ export default class Form extends Component {
     initialValues: PropTypes.object,
     onSubmit: PropTypes.func,
     onSubmitSuccess: PropTypes.func,
-    onSubmitFailure: PropTypes.func
+    onSubmitFailure: PropTypes.func,
   }
 
   static contextTypes = {
-    _form: PropTypes.object
+    _form: PropTypes.object,
   }
 
   static defaultProps = {
     initialValues: {},
     onSubmit: e => console.log('onSubmit', e),
     onSubmitSuccess: e => console.log('onSubmitSuccess', e),
-    onSubmitFailure: e => console.log('onSubmitFailure', e)
+    onSubmitFailure: e => console.log('onSubmitFailure', e),
   }
 
   static childContextTypes = {
-    _form: PropTypes.object.isRequired
+    _form: PropTypes.object.isRequired,
   }
 
   state = {
     fields: {},
     submitting: false,
     submitFailure: null,
-    submitSuccess: null
+    submitSuccess: null,
   }
   validators = {}
   initialValues = {}
@@ -63,8 +63,8 @@ export default class Form extends Component {
         errors: this.errors,
         valid: this.valid,
         submit: this.submit,
-        reset: this.reset
-      }
+        reset: this.reset,
+      },
     }
   }
 
@@ -190,9 +190,9 @@ export default class Form extends Component {
               ...prevField,
               // increment field count.
               count: prevField.count + 1,
-              value: this.initialValues[name]
-            }
-          }
+              value: this.initialValues[name],
+            },
+          },
         }
         // create new field namespace.
       } else {
@@ -208,9 +208,9 @@ export default class Form extends Component {
               pristine: true,
               validated: true,
               validating: false,
-              value: this.initialValues[name]
-            }
-          }
+              value: this.initialValues[name],
+            },
+          },
         }
       }
     })
@@ -228,10 +228,10 @@ export default class Form extends Component {
               ...prevField,
               // decrement field count.
               count: prevField.count - 1,
-              value: getDecrementValue(prevField, fieldProps)
+              value: getDecrementValue(prevField, fieldProps),
               // TODO: run validation again?
-            }
-          }
+            },
+          },
         }
         // only one field registered to name.
       } else {
@@ -243,7 +243,7 @@ export default class Form extends Component {
               fields[key] = prevState.fields[key]
             }
             return fields
-          }, {})
+          }, {}),
         }
       }
     })
@@ -266,9 +266,9 @@ export default class Form extends Component {
             pristine: true,
             validated: true,
             validating: false,
-            value: this.initialValues[name]
-          }
-        }
+            value: this.initialValues[name],
+          },
+        },
       }
     })
   }
@@ -280,7 +280,7 @@ export default class Form extends Component {
       valid: this.valid,
       focused: this.focused,
       values: this.values,
-      errors: this.errors
+      errors: this.errors,
     }
     this.setState(
       prevState => {
@@ -298,9 +298,9 @@ export default class Form extends Component {
               value: value,
               touched: true,
               validated: value === prevField.value,
-              pristine: this.initialValues[name] === value
-            }
-          }
+              pristine: this.initialValues[name] === value,
+            },
+          },
         }
       },
       () => {
@@ -316,9 +316,9 @@ export default class Form extends Component {
           ...prevState.fields,
           [name]: {
             ...prevState.fields[name],
-            focused: true
-          }
-        }
+            focused: true,
+          },
+        },
       }
     })
   }
@@ -331,9 +331,9 @@ export default class Form extends Component {
           [name]: {
             ...prevState.fields[name],
             focused: false,
-            touched: true
-          }
-        }
+            touched: true,
+          },
+        },
       }
     })
     this.validateField(name, this.state.fields[name].value)
@@ -350,9 +350,9 @@ export default class Form extends Component {
             ...prevState.fields[name],
             errors: errors,
             validating: validating,
-            validated: !errors.length && !validating
-          }
-        }
+            validated: !errors.length && !validating,
+          },
+        },
       }
     })
   }
@@ -427,7 +427,7 @@ export default class Form extends Component {
         // should only fail to resolve if form unmounts.
         return [
           ...validations,
-          this.validateField(name, this.state.fields[name].value)
+          this.validateField(name, this.state.fields[name].value),
         ]
       }, [])
     )
@@ -443,7 +443,7 @@ export default class Form extends Component {
         this.setState({
           submitting: true,
           submitSuccess: null,
-          submitFailure: null
+          submitFailure: null,
         })
       }
       // force submission into promise.
@@ -458,7 +458,7 @@ export default class Form extends Component {
       {
         submitting: false,
         submitSuccess: true,
-        submitFailure: null
+        submitFailure: null,
       },
       () => {
         this.props.onSubmitSuccess()
@@ -473,7 +473,7 @@ export default class Form extends Component {
         {
           submitting: false,
           submitSuccess: false,
-          submitFailure: err ? err.message || err : null
+          submitFailure: err ? err.message || err : null,
         },
         () => {
           this.props.onSubmitFailure(err)
@@ -499,10 +499,11 @@ export default class Form extends Component {
 
   render() {
     return React.createElement(this.element, {
-      onSubmit: e => {
-        e.preventDefault()
-      },
-      children: this.props.children
+      onSubmit: e => e.preventDefault(),
+      id: this.props.id,
+      children: this.props.children,
+      autoComplete: this.props.autoComplete,
+      autoCapitalize: this.props.autoCapitalize,
     })
   }
 }

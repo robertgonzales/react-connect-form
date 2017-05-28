@@ -231,7 +231,6 @@
                 // decrement field count.
                 count: prevField.count - 1,
                 value: (0, _utils.getDecrementValue)(prevField, fieldProps)
-                // TODO: run validation again?
               })))
             };
             // only one field registered to name.
@@ -491,9 +490,12 @@
       value: function render() {
         return _react2.default.createElement(this.element, {
           onSubmit: function onSubmit(e) {
-            e.preventDefault();
+            return e.preventDefault();
           },
-          children: this.props.children
+          id: this.props.id,
+          children: this.props.children,
+          autoComplete: this.props.autoComplete,
+          autoCapitalize: this.props.autoCapitalize
         });
       }
     }, {
