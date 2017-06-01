@@ -6,6 +6,7 @@
     "type": "git",
     "url": "https://github.com/robertgonzales/react-controlled-form.git"
   },
+  "main": "./dist/index.js",
   "author": "Robert Gonzales",
   "license": "MIT",
   "bugs": {
@@ -40,6 +41,7 @@
     "chai": "^3.5.0",
     "enzyme": "^2.2.0",
     "eslint": "^2.7.0",
+    "eslint-config-react-app": "^1.0.4",
     "eslint-plugin-babel": "^3.1.0",
     "eslint-plugin-react": "^4.2.3",
     "jsdom": "^8.1.0",
