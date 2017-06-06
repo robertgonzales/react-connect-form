@@ -1,6 +1,9 @@
 import assign from 'object-assign'
+import values from 'object.values'
 
 // ensure spread operator
 Object.assign = assign
 
-// TODO: Promise polyfill
+if (!Object.values) {
+  values.shim()
+}
