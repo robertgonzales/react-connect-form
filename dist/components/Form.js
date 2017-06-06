@@ -1,8 +1,8 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(["exports", "react", "../utils"], factory);
+    define(['exports', 'react', '../utils'], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require("react"), require("../utils"));
+    factory(exports, require('react'), require('../utils'));
   } else {
     var mod = {
       exports: {}
@@ -11,7 +11,7 @@
     global.Form = mod.exports;
   }
 })(this, function (exports, _react, _utils) {
-  "use strict";
+  'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -23,6 +23,18 @@
     return obj && obj.__esModule ? obj : {
       default: obj
     };
+  }
+
+  function _objectWithoutProperties(obj, keys) {
+    var target = {};
+
+    for (var i in obj) {
+      if (keys.indexOf(i) >= 0) continue;
+      if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+      target[i] = obj[i];
+    }
+
+    return target;
   }
 
   function _toConsumableArray(arr) {
@@ -178,7 +190,7 @@
             for (var key in _extends({}, prev.errors, _this.errors)) {
               var _ret2 = _loop(key);
 
-              if ((typeof _ret2 === "undefined" ? "undefined" : _typeof(_ret2)) === "object") return _ret2.v;
+              if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
             }
           }();
           if (errorsChanged) {
@@ -231,7 +243,6 @@
                 // decrement field count.
                 count: prevField.count - 1,
                 value: (0, _utils.getDecrementValue)(prevField, fieldProps)
-                // TODO: run validation again?
               })))
             };
             // only one field registered to name.
@@ -375,12 +386,12 @@
           var err = validator(value, _this.values);
           if (!err) {
             return errors;
-          } else if (typeof err === "string" || err instanceof Error) {
+          } else if (typeof err === 'string' || err instanceof Error) {
             errors.syncErrors.push(err);
-          } else if (typeof err.then === "function") {
+          } else if (typeof err.then === 'function') {
             errors.asyncErrors.push(err);
           } else {
-            throw new Error("validation must return a String, Error, or Promise");
+            throw new Error('validation must return a String, Error, or Promise');
           }
           return errors;
         }, { syncErrors: [], asyncErrors: [] });
@@ -397,7 +408,7 @@
       }, _this.handleSubmit = function () {
         if (_this.valid) {
           var submission = _this.props.onSubmit && _this.props.onSubmit(_this.values);
-          var isAsync = submission && typeof submission.then === "function";
+          var isAsync = submission && typeof submission.then === 'function';
           if (isAsync) {
             _this.setState({
               submitting: true,
@@ -408,13 +419,11 @@
           // force submission into promise.
           var resultPromise = Promise.resolve(submission);
           _this.cancelOnUnmount(resultPromise);
-          console.log("returning result promise: ", resultPromise);
           return resultPromise;
         } else {
-          return Promise.reject(new Error("Form is invalid"));
+          return Promise.reject(new Error('Form is invalid'));
         }
       }, _this.handleSubmitSuccess = function (result) {
-        console.log("handleSubmitSuccess", result);
         _this.setState({
           submitting: false,
           submitSuccess: true,
@@ -444,7 +453,7 @@
     }
 
     _createClass(Form, [{
-      key: "getChildContext",
+      key: 'getChildContext',
       value: function getChildContext() {
         return {
           _form: {
@@ -470,7 +479,7 @@
         };
       }
     }, {
-      key: "componentWillReceiveProps",
+      key: 'componentWillReceiveProps',
       value: function componentWillReceiveProps(nextProps) {
         var _this2 = this;
 
@@ -481,51 +490,59 @@
         }
       }
     }, {
-      key: "componentDidMount",
+      key: 'componentDidMount',
       value: function componentDidMount() {
         this._isUnmounted = false;
       }
     }, {
-      key: "componentWillUnmount",
+      key: 'componentWillUnmount',
       value: function componentWillUnmount() {
         this._isUnmounted = true;
       }
     }, {
-      key: "render",
+      key: 'render',
       value: function render() {
-        return _react2.default.createElement(this.element, {
+        var _props = this.props,
+            initialValues = _props.initialValues,
+            onSubmit = _props.onSubmit,
+            onSubmitSuccess = _props.onSubmitSuccess,
+            onSubmitFailure = _props.onSubmitFailure,
+            onChange = _props.onChange,
+            onPristine = _props.onPristine,
+            onTouched = _props.onTouched,
+            onFocused = _props.onFocused,
+            onValid = _props.onValid,
+            passProps = _objectWithoutProperties(_props, ['initialValues', 'onSubmit', 'onSubmitSuccess', 'onSubmitFailure', 'onChange', 'onPristine', 'onTouched', 'onFocused', 'onValid']);
+
+        return _react2.default.createElement(this.element, _extends({}, passProps, {
           onSubmit: function onSubmit(e) {
             return e.preventDefault();
-          },
-          id: this.props.id,
-          children: this.props.children,
-          autoComplete: this.props.autoComplete,
-          autoCapitalize: this.props.autoCapitalize
-        });
+          }
+        }));
       }
     }, {
-      key: "pristine",
+      key: 'pristine',
       get: function get() {
         return Object.values(this.state.fields).every(function (field) {
           return field.pristine;
         });
       }
     }, {
-      key: "touched",
+      key: 'touched',
       get: function get() {
         return Object.values(this.state.fields).some(function (field) {
           return field.touched;
         });
       }
     }, {
-      key: "valid",
+      key: 'valid',
       get: function get() {
         return Object.values(this.state.fields).every(function (field) {
           return field.errors.length < 1;
         });
       }
     }, {
-      key: "focused",
+      key: 'focused',
       get: function get() {
         var _this3 = this;
 
@@ -534,7 +551,7 @@
         });
       }
     }, {
-      key: "values",
+      key: 'values',
       get: function get() {
         var _this4 = this;
 
@@ -544,7 +561,7 @@
         }, {});
       }
     }, {
-      key: "errors",
+      key: 'errors',
       get: function get() {
         var _this5 = this;
 
@@ -556,21 +573,26 @@
         }, {});
       }
     }, {
-      key: "element",
+      key: 'element',
       get: function get() {
-        return this.context._form ? "div" : "form";
+        return this.context._form ? 'div' : 'form';
       }
     }]);
 
     return Form;
   }(_react.Component);
 
-  Form.displayName = "Form";
+  Form.displayName = 'Form';
   Form.propTypes = {
     initialValues: _react.PropTypes.object,
     onSubmit: _react.PropTypes.func,
     onSubmitSuccess: _react.PropTypes.func,
-    onSubmitFailure: _react.PropTypes.func
+    onSubmitFailure: _react.PropTypes.func,
+    onChange: _react.PropTypes.func,
+    onPristine: _react.PropTypes.func,
+    onTouched: _react.PropTypes.func,
+    onFocused: _react.PropTypes.func,
+    onValid: _react.PropTypes.func
   };
   Form.contextTypes = {
     _form: _react.PropTypes.object
@@ -578,13 +600,13 @@
   Form.defaultProps = {
     initialValues: {},
     onSubmit: function onSubmit(e) {
-      return console.log("onSubmit", e);
+      return console.log('onSubmit', e);
     },
     onSubmitSuccess: function onSubmitSuccess(e) {
-      return console.log("onSubmitSuccess", e);
+      return console.log('onSubmitSuccess', e);
     },
     onSubmitFailure: function onSubmitFailure(e) {
-      return console.log("onSubmitFailure", e);
+      return console.log('onSubmitFailure', e);
     }
   };
   Form.childContextTypes = {
