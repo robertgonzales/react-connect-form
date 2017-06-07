@@ -132,8 +132,7 @@
 
         var inputProps = _extends({}, rest, {
           type: 'submit',
-          onClick: this.handleClick,
-          disabled: submitting || pristine
+          onClick: this.handleClick
         });
         var passProps = _extends({}, inputProps, {
           submitSuccess: submitSuccess,

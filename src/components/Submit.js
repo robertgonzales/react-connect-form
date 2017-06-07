@@ -4,17 +4,17 @@ export default class Submit extends Component {
   static displayName = 'Submit'
 
   static contextTypes = {
-    _form: PropTypes.object.isRequired
+    _form: PropTypes.object.isRequired,
   }
 
   static propTypes = {
     render: PropTypes.func,
     component: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    onClick: PropTypes.func
+    onClick: PropTypes.func,
   }
 
   static defaultProps = {
-    component: 'button'
+    component: 'button',
   }
 
   constructor(props, context) {
@@ -33,13 +33,12 @@ export default class Submit extends Component {
       submitFailure,
       submitting,
       pristine,
-      valid
+      valid,
     } = this.context._form
     const inputProps = {
       ...rest,
       type: 'submit',
       onClick: this.handleClick,
-      disabled: submitting || pristine
     }
     const passProps = {
       ...inputProps,
@@ -47,7 +46,7 @@ export default class Submit extends Component {
       submitFailure,
       submitting,
       pristine,
-      valid
+      valid,
     }
     if (component) {
       if (component === 'button') {
