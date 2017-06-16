@@ -1,6 +1,6 @@
 {
-  "name": "react-controlled-form",
-  "version": "0.2.5",
+  "name": "react-connect-form",
+  "version": "0.2.6",
   "description": "Declarative React Forms",
   "repository": {
     "type": "git",
@@ -54,8 +54,8 @@
     "standard": "^9.0.1"
   },
   "peerDependencies": {
-    "react": "^15.5.0",
-    "react-dom": "^15.5.0"
+    "react": "^15",
+    "react-dom": "^15"
   },
   "dependencies": {
     "deep-equal": "^1.0.1",

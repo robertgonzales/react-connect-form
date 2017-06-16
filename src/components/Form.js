@@ -129,10 +129,6 @@ export default class Form extends Component {
     }, {})
   }
 
-  get element() {
-    return this.context._form ? 'div' : 'form'
-  }
-
   handleChange = prev => {
     this.props.onChange && this.props.onChange({ ...this.values })
     if (this.props.onPristine && prev.pristine != this.pristine) {
@@ -517,9 +513,10 @@ export default class Form extends Component {
       onValid,
       ...passProps
     } = this.props
-    return React.createElement(this.element, {
-      ...passProps,
-      onSubmit: e => e.preventDefault(),
-    })
+
+    if (this.context._form) {
+      return <div {...passProps} />
+    }
+    return <form {...passProps} onSubmit={e => e.preventDefault()} noValidate />
   }
 }

@@ -514,11 +514,12 @@
             onValid = _props.onValid,
             passProps = _objectWithoutProperties(_props, ['initialValues', 'onSubmit', 'onSubmitSuccess', 'onSubmitFailure', 'onChange', 'onPristine', 'onTouched', 'onFocused', 'onValid']);
 
-        return _react2.default.createElement(this.element, _extends({}, passProps, {
-          onSubmit: function onSubmit(e) {
+        if (this.context._form) {
+          return _react2.default.createElement('div', passProps);
+        }
+        return _react2.default.createElement('form', _extends({}, passProps, { onSubmit: function onSubmit(e) {
             return e.preventDefault();
-          }
-        }));
+          } }));
       }
     }, {
       key: 'pristine',
@@ -571,11 +572,6 @@
           }
           return errors;
         }, {});
-      }
-    }, {
-      key: 'element',
-      get: function get() {
-        return this.context._form ? 'div' : 'form';
       }
     }]);
 
