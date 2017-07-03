@@ -1,8 +1,8 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports', 'react'], factory);
+    define(["exports", "react"], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require('react'));
+    factory(exports, require("react"));
   } else {
     var mod = {
       exports: {}
@@ -11,7 +11,7 @@
     global.Reset = mod.exports;
   }
 })(this, function (exports, _react) {
-  'use strict';
+  "use strict";
 
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -23,6 +23,32 @@
     return obj && obj.__esModule ? obj : {
       default: obj
     };
+  }
+
+  var _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
+  function _objectWithoutProperties(obj, keys) {
+    var target = {};
+
+    for (var i in obj) {
+      if (keys.indexOf(i) >= 0) continue;
+      if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+      target[i] = obj[i];
+    }
+
+    return target;
   }
 
   function _classCallCheck(instance, Constructor) {
@@ -85,27 +111,43 @@
         _this.context._form.reset();
       };
 
-      if (!context._form) throw new Error('Reset must be inside Form');
+      if (!context._form) throw new Error("Reset must be inside Form");
       return _this;
     }
 
     _createClass(Reset, [{
-      key: 'render',
+      key: "render",
       value: function render() {
-        return _react2.default.createElement(
-          'button',
-          { type: 'reset', onClick: this.handleClick },
-          this.props.children
-        );
+        var _props = this.props,
+            component = _props.component,
+            render = _props.render,
+            rest = _objectWithoutProperties(_props, ["component", "render"]);
+
+        var inputProps = _extends({}, rest, {
+          type: "reset",
+          onClick: this.handleClick
+        });
+        if (typeof render === "function") {
+          return render(inputProps);
+        } else if (component === "button") {
+          return _react2.default.createElement(component, inputProps);
+        } else if (component) {
+          return _react2.default.createElement(component, inputProps);
+        } else {
+          return null;
+        }
       }
     }]);
 
     return Reset;
   }(_react.Component);
 
-  Reset.displayName = 'Reset';
+  Reset.displayName = "Reset";
   Reset.contextTypes = {
     _form: _react.PropTypes.object.isRequired
+  };
+  Reset.defaultProps = {
+    component: "button"
   };
   exports.default = Reset;
 });

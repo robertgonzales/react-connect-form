@@ -1,11 +1,11 @@
-import React, { Component, PropTypes } from 'react'
-import { deepEqual, getEventValue } from '../utils'
+import React, { Component, PropTypes } from "react"
+import { deepEqual, getEventValue } from "../utils"
 
 export default class Field extends Component {
-  static displayName = 'Field'
+  static displayName = "Field"
 
   static contextTypes = {
-    _form: PropTypes.object.isRequired
+    _form: PropTypes.object.isRequired,
   }
 
   static propTypes = {
@@ -16,18 +16,18 @@ export default class Field extends Component {
     validators: PropTypes.array,
     onChange: PropTypes.func,
     onFocus: PropTypes.func,
-    onBlur: PropTypes.func
+    onBlur: PropTypes.func,
   }
 
   static defaultProps = {
-    component: 'input',
-    validators: []
+    component: "input",
+    validators: [],
   }
 
   constructor(props, context) {
     super(props, context)
     if (!context._form) {
-      throw new Error('Field must be inside Form')
+      throw new Error("Field must be inside Form")
     }
   }
 
@@ -66,24 +66,24 @@ export default class Field extends Component {
   }
 
   get value() {
-    if (this.props.type === 'radio' || this.props.type === 'checkbox') {
+    if (this.props.type === "radio" || this.props.type === "checkbox") {
       if (this.props.value === undefined) {
         return true
       }
       return this.props.value
     }
     if (
-      this.props.type === 'text' ||
-      this.props.type === 'email' ||
-      this.props.type === 'password'
+      this.props.type === "text" ||
+      this.props.type === "email" ||
+      this.props.type === "password"
     ) {
-      return this.field.value || ''
+      return this.field.value || ""
     }
     return this.field.value
   }
 
   get checked() {
-    if (this.props.type === 'radio' || this.props.type === 'checkbox') {
+    if (this.props.type === "radio" || this.props.type === "checkbox") {
       if (Array.isArray(this.field.value)) {
         return this.field.value.indexOf(this.value) > -1
       } else {
@@ -128,20 +128,19 @@ export default class Field extends Component {
       onFocus: this.handleFocus,
       onBlur: this.handleBlur,
       checked: this.checked,
-      value: this.value
+      value: this.value,
     }
     const passProps = {
+      form: this.context._form,
       ...this.field,
-      ...inputProps
+      ...inputProps,
     }
-    if (component) {
-      if (typeof component === 'string') {
-        return React.createElement(component, inputProps)
-      } else {
-        return React.createElement(component, passProps)
-      }
-    } else if (typeof render === 'function') {
+    if (typeof render === "function") {
       return render(passProps)
+    } else if (typeof component === "string") {
+      return React.createElement(component, inputProps)
+    } else if (component) {
+      return React.createElement(component, passProps)
     } else {
       return null
     }

@@ -1,8 +1,8 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports', 'react'], factory);
+    define(["exports", "react"], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require('react'));
+    factory(exports, require("react"));
   } else {
     var mod = {
       exports: {}
@@ -11,7 +11,7 @@
     global.Submit = mod.exports;
   }
 })(this, function (exports, _react) {
-  'use strict';
+  "use strict";
 
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -111,17 +111,17 @@
         _this.context._form.submit(e);
       };
 
-      if (!context._form) throw new Error('Submit must be inside Form');
+      if (!context._form) throw new Error("Submit must be inside Form");
       return _this;
     }
 
     _createClass(Submit, [{
-      key: 'render',
+      key: "render",
       value: function render() {
         var _props = this.props,
             component = _props.component,
             render = _props.render,
-            rest = _objectWithoutProperties(_props, ['component', 'render']);
+            rest = _objectWithoutProperties(_props, ["component", "render"]);
 
         var _context$_form = this.context._form,
             submitSuccess = _context$_form.submitSuccess,
@@ -131,7 +131,7 @@
             valid = _context$_form.valid;
 
         var inputProps = _extends({}, rest, {
-          type: 'submit',
+          type: "submit",
           onClick: this.handleClick
         });
         var passProps = _extends({}, inputProps, {
@@ -141,14 +141,12 @@
           pristine: pristine,
           valid: valid
         });
-        if (component) {
-          if (component === 'button') {
-            return _react2.default.createElement(component, inputProps);
-          } else {
-            return _react2.default.createElement(component, passProps);
-          }
-        } else if (typeof render === 'function') {
+        if (typeof render === "function") {
           return render(passProps);
+        } else if (component === "button") {
+          return _react2.default.createElement(component, inputProps);
+        } else if (component) {
+          return _react2.default.createElement(component, passProps);
         } else {
           return null;
         }
@@ -158,7 +156,7 @@
     return Submit;
   }(_react.Component);
 
-  Submit.displayName = 'Submit';
+  Submit.displayName = "Submit";
   Submit.contextTypes = {
     _form: _react.PropTypes.object.isRequired
   };
@@ -168,7 +166,7 @@
     onClick: _react.PropTypes.func
   };
   Submit.defaultProps = {
-    component: 'button'
+    component: "button"
   };
   exports.default = Submit;
 });

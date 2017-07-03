@@ -1,7 +1,7 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component, PropTypes } from "react"
 
 export default class Submit extends Component {
-  static displayName = 'Submit'
+  static displayName = "Submit"
 
   static contextTypes = {
     _form: PropTypes.object.isRequired,
@@ -14,12 +14,12 @@ export default class Submit extends Component {
   }
 
   static defaultProps = {
-    component: 'button',
+    component: "button",
   }
 
   constructor(props, context) {
     super(props, context)
-    if (!context._form) throw new Error('Submit must be inside Form')
+    if (!context._form) throw new Error("Submit must be inside Form")
   }
 
   handleClick = e => {
@@ -37,7 +37,7 @@ export default class Submit extends Component {
     } = this.context._form
     const inputProps = {
       ...rest,
-      type: 'submit',
+      type: "submit",
       onClick: this.handleClick,
     }
     const passProps = {
@@ -48,14 +48,12 @@ export default class Submit extends Component {
       pristine,
       valid,
     }
-    if (component) {
-      if (component === 'button') {
-        return React.createElement(component, inputProps)
-      } else {
-        return React.createElement(component, passProps)
-      }
-    } else if (typeof render === 'function') {
+    if (typeof render === "function") {
       return render(passProps)
+    } else if (component === "button") {
+      return React.createElement(component, inputProps)
+    } else if (component) {
+      return React.createElement(component, passProps)
     } else {
       return null
     }

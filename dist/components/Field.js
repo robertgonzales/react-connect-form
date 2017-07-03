@@ -1,8 +1,8 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports', 'react', '../utils'], factory);
+    define(["exports", "react", "../utils"], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require('react'), require('../utils'));
+    factory(exports, require("react"), require("../utils"));
   } else {
     var mod = {
       exports: {}
@@ -11,7 +11,7 @@
     global.Field = mod.exports;
   }
 })(this, function (exports, _react, _utils) {
-  'use strict';
+  "use strict";
 
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -124,23 +124,23 @@
       };
 
       if (!context._form) {
-        throw new Error('Field must be inside Form');
+        throw new Error("Field must be inside Form");
       }
       return _this;
     }
 
     _createClass(Field, [{
-      key: 'componentWillMount',
+      key: "componentWillMount",
       value: function componentWillMount() {
         this.context._form.registerField(this.props.name, this.props);
       }
     }, {
-      key: 'componentWillUnmount',
+      key: "componentWillUnmount",
       value: function componentWillUnmount() {
         this.context._form.unregisterField(this.props.name, this.props);
       }
     }, {
-      key: 'componentWillReceiveProps',
+      key: "componentWillReceiveProps",
       value: function componentWillReceiveProps(nextProps) {
         if (nextProps.name !== this.props.name) {
           this.context._form.unregisterField(this.props.name, this.props);
@@ -151,7 +151,7 @@
         }
       }
     }, {
-      key: 'shouldComponentUpdate',
+      key: "shouldComponentUpdate",
       value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
         var _this2 = this;
 
@@ -164,7 +164,7 @@
         });
       }
     }, {
-      key: 'render',
+      key: "render",
       value: function render() {
         if (!this.field) return null;
 
@@ -174,7 +174,7 @@
             validators = _props.validators,
             component = _props.component,
             render = _props.render,
-            rest = _objectWithoutProperties(_props, ['initialChecked', 'initialValue', 'validators', 'component', 'render']);
+            rest = _objectWithoutProperties(_props, ["initialChecked", "initialValue", "validators", "component", "render"]);
 
         var inputProps = _extends({}, rest, {
           onChange: this.handleChange,
@@ -183,42 +183,42 @@
           checked: this.checked,
           value: this.value
         });
-        var passProps = _extends({}, this.field, inputProps);
-        if (component) {
-          if (typeof component === 'string') {
-            return _react2.default.createElement(component, inputProps);
-          } else {
-            return _react2.default.createElement(component, passProps);
-          }
-        } else if (typeof render === 'function') {
+        var passProps = _extends({
+          form: this.context._form
+        }, this.field, inputProps);
+        if (typeof render === "function") {
           return render(passProps);
+        } else if (typeof component === "string") {
+          return _react2.default.createElement(component, inputProps);
+        } else if (component) {
+          return _react2.default.createElement(component, passProps);
         } else {
           return null;
         }
       }
     }, {
-      key: 'field',
+      key: "field",
       get: function get() {
         return this.context._form.fields[this.props.name];
       }
     }, {
-      key: 'value',
+      key: "value",
       get: function get() {
-        if (this.props.type === 'radio' || this.props.type === 'checkbox') {
+        if (this.props.type === "radio" || this.props.type === "checkbox") {
           if (this.props.value === undefined) {
             return true;
           }
           return this.props.value;
         }
-        if (this.props.type === 'text' || this.props.type === 'email' || this.props.type === 'password') {
-          return this.field.value || '';
+        if (this.props.type === "text" || this.props.type === "email" || this.props.type === "password") {
+          return this.field.value || "";
         }
         return this.field.value;
       }
     }, {
-      key: 'checked',
+      key: "checked",
       get: function get() {
-        if (this.props.type === 'radio' || this.props.type === 'checkbox') {
+        if (this.props.type === "radio" || this.props.type === "checkbox") {
           if (Array.isArray(this.field.value)) {
             return this.field.value.indexOf(this.value) > -1;
           } else {
@@ -227,7 +227,7 @@
         }
       }
     }, {
-      key: 'valid',
+      key: "valid",
       get: function get() {
         return this.field.errors.length < 1;
       }
@@ -236,7 +236,7 @@
     return Field;
   }(_react.Component);
 
-  Field.displayName = 'Field';
+  Field.displayName = "Field";
   Field.contextTypes = {
     _form: _react.PropTypes.object.isRequired
   };
@@ -251,7 +251,7 @@
     onBlur: _react.PropTypes.func
   };
   Field.defaultProps = {
-    component: 'input',
+    component: "input",
     validators: []
   };
   exports.default = Field;

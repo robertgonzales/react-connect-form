@@ -519,7 +519,7 @@
         }
         return _react2.default.createElement('form', _extends({}, passProps, { onSubmit: function onSubmit(e) {
             return e.preventDefault();
-          } }));
+          }, noValidate: true }));
       }
     }, {
       key: 'pristine',
