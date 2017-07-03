@@ -54,15 +54,21 @@ export default class Field extends Component {
 
   shouldComponentUpdate(nextProps, nextState, nextContext) {
     const nextField = nextContext._form.fields[nextProps.name]
+    const nextValues = nextContext._form.values
     if (!this.field) return true
     return (
       Object.keys(nextProps).some(key => nextProps[key] !== this.props[key]) ||
-      Object.keys(nextField).some(key => nextField[key] !== this.field[key])
+      Object.keys(nextField).some(key => nextField[key] !== this.field[key]) ||
+      Object.keys(nextValues).some(key => nextValues[key] !== this.values[key])
     )
   }
 
   get field() {
     return this.context._form.fields[this.props.name]
+  }
+
+  get values() {
+    return this.context._form.values
   }
 
   get value() {
@@ -131,7 +137,7 @@ export default class Field extends Component {
       value: this.value,
     }
     const passProps = {
-      form: this.context._form,
+      values: this.values,
       ...this.field,
       ...inputProps,
     }

@@ -156,11 +156,14 @@
         var _this2 = this;
 
         var nextField = nextContext._form.fields[nextProps.name];
+        var nextValues = nextContext._form.values;
         if (!this.field) return true;
         return Object.keys(nextProps).some(function (key) {
           return nextProps[key] !== _this2.props[key];
         }) || Object.keys(nextField).some(function (key) {
           return nextField[key] !== _this2.field[key];
+        }) || Object.keys(nextValues).some(function (key) {
+          return nextValues[key] !== _this2.values[key];
         });
       }
     }, {
@@ -184,7 +187,7 @@
           value: this.value
         });
         var passProps = _extends({
-          form: this.context._form
+          values: this.values
         }, this.field, inputProps);
         if (typeof render === "function") {
           return render(passProps);
@@ -200,6 +203,11 @@
       key: "field",
       get: function get() {
         return this.context._form.fields[this.props.name];
+      }
+    }, {
+      key: "values",
+      get: function get() {
+        return this.context._form.values;
       }
     }, {
       key: "value",
