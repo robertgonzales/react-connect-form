@@ -484,9 +484,10 @@
         var _this2 = this;
 
         if (!(0, _utils.deepEqual)(nextProps.initialValues, this.props.initialValues)) {
-          console.log("nextProps", nextProps.initialValues);
           Object.keys(nextProps.initialValues).forEach(function (name) {
-            _this2.resetField(name, null, nextProps.initialValues);
+            if (nextState.fields.hasOwnProperty(name)) {
+              _this2.resetField(name, null, nextProps.initialValues);
+            }
           });
         }
       }
