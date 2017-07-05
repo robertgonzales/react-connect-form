@@ -75,8 +75,9 @@ export default class Form extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (!deepEqual(nextProps.initialValues, this.props.initialValues)) {
+      console.log("nextProps", nextProps.initialValues)
       Object.keys(nextProps.initialValues).forEach(name => {
-        this.resetField(name, null, nextProps.initialValues[name])
+        this.resetField(name, null, nextProps.initialValues)
       })
     }
   }

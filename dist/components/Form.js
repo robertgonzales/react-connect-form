@@ -1,8 +1,8 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports', 'react', '../utils'], factory);
+    define(["exports", "react", "../utils"], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require('react'), require('../utils'));
+    factory(exports, require("react"), require("../utils"));
   } else {
     var mod = {
       exports: {}
@@ -11,7 +11,7 @@
     global.Form = mod.exports;
   }
 })(this, function (exports, _react, _utils) {
-  'use strict';
+  "use strict";
 
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -190,7 +190,7 @@
             for (var key in _extends({}, prev.errors, _this.errors)) {
               var _ret2 = _loop(key);
 
-              if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
+              if ((typeof _ret2 === "undefined" ? "undefined" : _typeof(_ret2)) === "object") return _ret2.v;
             }
           }();
           if (errorsChanged) {
@@ -259,11 +259,11 @@
             };
           }
         });
-      }, _this.resetField = function (name, fieldProps) {
+      }, _this.resetField = function (name, fieldProps, initialValues) {
         _this.setState(function (prevState) {
           var prevField = prevState.fields[name];
-          if (_this.props.initialValues.hasOwnProperty(name)) {
-            _this.initialValues[name] = _this.props.initialValues[name];
+          if (initialValues.hasOwnProperty(name)) {
+            _this.initialValues[name] = initialValues[name];
           } else if (fieldProps) {
             _this.initialValues[name] = (0, _utils.getInitialValue)(prevField, fieldProps);
           }
@@ -386,12 +386,12 @@
           var err = validator(value, _this.values);
           if (!err) {
             return errors;
-          } else if (typeof err === 'string' || err instanceof Error) {
+          } else if (typeof err === "string" || err instanceof Error) {
             errors.syncErrors.push(err);
-          } else if (typeof err.then === 'function') {
+          } else if (typeof err.then === "function") {
             errors.asyncErrors.push(err);
           } else {
-            throw new Error('validation must return a String, Error, or Promise');
+            throw new Error("validation must return a String, Error, or Promise");
           }
           return errors;
         }, { syncErrors: [], asyncErrors: [] });
@@ -408,7 +408,7 @@
       }, _this.handleSubmit = function () {
         if (_this.valid) {
           var submission = _this.props.onSubmit && _this.props.onSubmit(_this.values);
-          var isAsync = submission && typeof submission.then === 'function';
+          var isAsync = submission && typeof submission.then === "function";
           if (isAsync) {
             _this.setState({
               submitting: true,
@@ -421,7 +421,7 @@
           _this.cancelOnUnmount(resultPromise);
           return resultPromise;
         } else {
-          return Promise.reject(new Error('Form is invalid'));
+          return Promise.reject(new Error("Form is invalid"));
         }
       }, _this.handleSubmitSuccess = function (result) {
         _this.setState({
@@ -447,13 +447,13 @@
         .resolve(_this.validateForm()).then(_this.handleSubmit).then(_this.handleSubmitSuccess).catch(_this.handleSubmitFailure);
       }, _this.reset = function () {
         Object.keys(_this.state.fields).forEach(function (name) {
-          return _this.resetField(name);
+          return _this.resetField(name, null, _this.props.initialValues);
         });
       }, _temp), _possibleConstructorReturn(_this, _ret);
     }
 
     _createClass(Form, [{
-      key: 'getChildContext',
+      key: "getChildContext",
       value: function getChildContext() {
         return {
           _form: {
@@ -479,28 +479,29 @@
         };
       }
     }, {
-      key: 'componentWillReceiveProps',
+      key: "componentWillReceiveProps",
       value: function componentWillReceiveProps(nextProps) {
         var _this2 = this;
 
         if (!(0, _utils.deepEqual)(nextProps.initialValues, this.props.initialValues)) {
+          console.log("nextProps", nextProps.initialValues);
           Object.keys(nextProps.initialValues).forEach(function (name) {
-            _this2.resetField(name, nextProps.initialValues[name]);
+            _this2.resetField(name, null, nextProps.initialValues);
           });
         }
       }
     }, {
-      key: 'componentDidMount',
+      key: "componentDidMount",
       value: function componentDidMount() {
         this._isUnmounted = false;
       }
     }, {
-      key: 'componentWillUnmount',
+      key: "componentWillUnmount",
       value: function componentWillUnmount() {
         this._isUnmounted = true;
       }
     }, {
-      key: 'render',
+      key: "render",
       value: function render() {
         var _props = this.props,
             initialValues = _props.initialValues,
@@ -512,38 +513,38 @@
             onTouched = _props.onTouched,
             onFocused = _props.onFocused,
             onValid = _props.onValid,
-            passProps = _objectWithoutProperties(_props, ['initialValues', 'onSubmit', 'onSubmitSuccess', 'onSubmitFailure', 'onChange', 'onPristine', 'onTouched', 'onFocused', 'onValid']);
+            passProps = _objectWithoutProperties(_props, ["initialValues", "onSubmit", "onSubmitSuccess", "onSubmitFailure", "onChange", "onPristine", "onTouched", "onFocused", "onValid"]);
 
         if (this.context._form) {
-          return _react2.default.createElement('div', passProps);
+          return _react2.default.createElement("div", passProps);
         }
-        return _react2.default.createElement('form', _extends({}, passProps, { onSubmit: function onSubmit(e) {
+        return _react2.default.createElement("form", _extends({}, passProps, { onSubmit: function onSubmit(e) {
             return e.preventDefault();
           }, noValidate: true }));
       }
     }, {
-      key: 'pristine',
+      key: "pristine",
       get: function get() {
         return Object.values(this.state.fields).every(function (field) {
           return field.pristine;
         });
       }
     }, {
-      key: 'touched',
+      key: "touched",
       get: function get() {
         return Object.values(this.state.fields).some(function (field) {
           return field.touched;
         });
       }
     }, {
-      key: 'valid',
+      key: "valid",
       get: function get() {
         return Object.values(this.state.fields).every(function (field) {
           return field.errors.length < 1;
         });
       }
     }, {
-      key: 'focused',
+      key: "focused",
       get: function get() {
         var _this3 = this;
 
@@ -552,7 +553,7 @@
         });
       }
     }, {
-      key: 'values',
+      key: "values",
       get: function get() {
         var _this4 = this;
 
@@ -562,7 +563,7 @@
         }, {});
       }
     }, {
-      key: 'errors',
+      key: "errors",
       get: function get() {
         var _this5 = this;
 
@@ -578,7 +579,7 @@
     return Form;
   }(_react.Component);
 
-  Form.displayName = 'Form';
+  Form.displayName = "Form";
   Form.propTypes = {
     initialValues: _react.PropTypes.object,
     onSubmit: _react.PropTypes.func,
@@ -596,13 +597,13 @@
   Form.defaultProps = {
     initialValues: {},
     onSubmit: function onSubmit(e) {
-      return console.log('onSubmit', e);
+      return console.log("onSubmit", e);
     },
     onSubmitSuccess: function onSubmitSuccess(e) {
-      return console.log('onSubmitSuccess', e);
+      return console.log("onSubmitSuccess", e);
     },
     onSubmitFailure: function onSubmitFailure(e) {
-      return console.log('onSubmitFailure', e);
+      return console.log("onSubmitFailure", e);
     }
   };
   Form.childContextTypes = {
