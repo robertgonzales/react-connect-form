@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component, PropTypes } from "react"
 import {
   deepEqual,
   cancelPromise,
@@ -7,10 +7,10 @@ import {
   getValidators,
   getInitialValue,
   getDecrementValue,
-} from '../utils'
+} from "../utils"
 
 export default class Form extends Component {
-  static displayName = 'Form'
+  static displayName = "Form"
 
   static propTypes = {
     initialValues: PropTypes.object,
@@ -30,9 +30,9 @@ export default class Form extends Component {
 
   static defaultProps = {
     initialValues: {},
-    onSubmit: e => console.log('onSubmit', e),
-    onSubmitSuccess: e => console.log('onSubmitSuccess', e),
-    onSubmitFailure: e => console.log('onSubmitFailure', e),
+    onSubmit: e => console.log("onSubmit", e),
+    onSubmitSuccess: e => console.log("onSubmitSuccess", e),
+    onSubmitFailure: e => console.log("onSubmitFailure", e),
   }
 
   static childContextTypes = {
@@ -76,7 +76,7 @@ export default class Form extends Component {
   componentWillReceiveProps(nextProps) {
     if (!deepEqual(nextProps.initialValues, this.props.initialValues)) {
       Object.keys(nextProps.initialValues).forEach(name => {
-        this.resetField(name, nextProps.initialValues[name])
+        this.resetField(name, null, nextProps.initialValues[name])
       })
     }
   }
@@ -250,11 +250,11 @@ export default class Form extends Component {
     })
   }
 
-  resetField = (name, fieldProps) => {
+  resetField = (name, fieldProps, initialValues) => {
     this.setState(prevState => {
       const prevField = prevState.fields[name]
-      if (this.props.initialValues.hasOwnProperty(name)) {
-        this.initialValues[name] = this.props.initialValues[name]
+      if (initialValues.hasOwnProperty(name)) {
+        this.initialValues[name] = initialValues[name]
       } else if (fieldProps) {
         this.initialValues[name] = getInitialValue(prevField, fieldProps)
       }
@@ -405,12 +405,12 @@ export default class Form extends Component {
         let err = validator(value, this.values)
         if (!err) {
           return errors
-        } else if (typeof err === 'string' || err instanceof Error) {
+        } else if (typeof err === "string" || err instanceof Error) {
           errors.syncErrors.push(err)
-        } else if (typeof err.then === 'function') {
+        } else if (typeof err.then === "function") {
           errors.asyncErrors.push(err)
         } else {
-          throw new Error('validation must return a String, Error, or Promise')
+          throw new Error("validation must return a String, Error, or Promise")
         }
         return errors
       },
@@ -439,7 +439,7 @@ export default class Form extends Component {
   handleSubmit = () => {
     if (this.valid) {
       const submission = this.props.onSubmit && this.props.onSubmit(this.values)
-      const isAsync = submission && typeof submission.then === 'function'
+      const isAsync = submission && typeof submission.then === "function"
       if (isAsync) {
         this.setState({
           submitting: true,
@@ -452,7 +452,7 @@ export default class Form extends Component {
       this.cancelOnUnmount(resultPromise)
       return resultPromise
     } else {
-      return Promise.reject(new Error('Form is invalid'))
+      return Promise.reject(new Error("Form is invalid"))
     }
   }
 
@@ -497,7 +497,9 @@ export default class Form extends Component {
   }
 
   reset = () => {
-    Object.keys(this.state.fields).forEach(name => this.resetField(name))
+    Object.keys(this.state.fields).forEach(name =>
+      this.resetField(name, null, this.props.initialValues)
+    )
   }
 
   render() {
