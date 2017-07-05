@@ -480,12 +480,12 @@
       }
     }, {
       key: "componentWillReceiveProps",
-      value: function componentWillReceiveProps(nextProps) {
+      value: function componentWillReceiveProps(nextProps, nextState) {
         var _this2 = this;
 
         if (!(0, _utils.deepEqual)(nextProps.initialValues, this.props.initialValues)) {
           Object.keys(nextProps.initialValues).forEach(function (name) {
-            if (nextState.fields.hasOwnProperty(name)) {
+            if (_this2.state.fields[name]) {
               _this2.resetField(name, null, nextProps.initialValues);
             }
           });
