@@ -1,57 +1,21 @@
-import React, { Component, PropTypes } from "react"
+import React, { PureComponent } from "react"
+import PropTypes from "prop-types"
+import { connectSubmit } from "../connectors"
 
-export default class Submit extends Component {
+class Submit extends PureComponent {
   static displayName = "Submit"
-
-  static contextTypes = {
-    _form: PropTypes.object.isRequired,
-  }
 
   static propTypes = {
     render: PropTypes.func,
-    component: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    onClick: PropTypes.func,
-  }
-
-  static defaultProps = {
-    component: "button",
-  }
-
-  constructor(props, context) {
-    super(props, context)
-    if (!context._form) throw new Error("Submit must be inside Form")
-  }
-
-  handleClick = e => {
-    this.context._form.submit(e)
+    component: PropTypes.node,
   }
 
   render() {
-    const { component, render, ...rest } = this.props
-    const {
-      submitSuccess,
-      submitFailure,
-      submitting,
-      pristine,
-      valid,
-    } = this.context._form
-    const inputProps = {
-      ...rest,
-      type: "submit",
-      onClick: this.handleClick,
-    }
-    const passProps = {
-      ...inputProps,
-      submitSuccess,
-      submitFailure,
-      submitting,
-      pristine,
-      valid,
-    }
+    const { render, component, ...passProps } = this.props
     if (typeof render === "function") {
       return render(passProps)
     } else if (component === "button") {
-      return React.createElement(component, inputProps)
+      return React.createElement(component, passProps)
     } else if (component) {
       return React.createElement(component, passProps)
     } else {
@@ -59,3 +23,5 @@ export default class Submit extends Component {
     }
   }
 }
+
+export default connectSubmit(Submit)

@@ -1,40 +1,27 @@
-import React, { Component, PropTypes } from "react"
+import React, { PureComponent } from "react"
+import PropTypes from "prop-types"
+import { connectReset } from "../connectors"
 
-export default class Reset extends Component {
+class Reset extends PureComponent {
   static displayName = "Reset"
 
-  static contextTypes = {
-    _form: PropTypes.object.isRequired,
-  }
-
-  static defaultProps = {
-    component: "button",
-  }
-
-  constructor(props, context) {
-    super(props, context)
-    if (!context._form) throw new Error("Reset must be inside Form")
-  }
-
-  handleClick = e => {
-    this.context._form.reset()
+  static propTypes = {
+    render: PropTypes.func,
+    component: PropTypes.node,
   }
 
   render() {
-    const { component, render, ...rest } = this.props
-    const inputProps = {
-      ...rest,
-      type: "reset",
-      onClick: this.handleClick,
-    }
+    const { component, render, ...passProps } = this.props
     if (typeof render === "function") {
-      return render(inputProps)
+      return render(passProps)
     } else if (component === "button") {
-      return React.createElement(component, inputProps)
+      return React.createElement(component, passProps)
     } else if (component) {
-      return React.createElement(component, inputProps)
+      return React.createElement(component, passProps)
     } else {
       return null
     }
   }
 }
+
+export default connectReset(Reset)
