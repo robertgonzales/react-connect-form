@@ -10,6 +10,10 @@ class Field extends PureComponent {
     component: PropTypes.node,
   }
 
+  static defaultProps = {
+    component: "input",
+  }
+
   render() {
     const { render, component, ...rest } = this.props
     if (typeof render === "function") {

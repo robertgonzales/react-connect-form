@@ -1,16 +1,16 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(["exports", "react"], factory);
+    define(["exports", "react", "prop-types", "../connectors"], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require("react"));
+    factory(exports, require("react"), require("prop-types"), require("../connectors"));
   } else {
     var mod = {
       exports: {}
     };
-    factory(mod.exports, global.react);
+    factory(mod.exports, global.react, global.propTypes, global.connectors);
     global.Reset = mod.exports;
   }
-})(this, function (exports, _react) {
+})(this, function (exports, _react, _propTypes, _connectors) {
   "use strict";
 
   Object.defineProperty(exports, "__esModule", {
@@ -19,25 +19,13 @@
 
   var _react2 = _interopRequireDefault(_react);
 
+  var _propTypes2 = _interopRequireDefault(_propTypes);
+
   function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : {
       default: obj
     };
   }
-
-  var _extends = Object.assign || function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
 
   function _objectWithoutProperties(obj, keys) {
     var target = {};
@@ -99,20 +87,13 @@
     if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
   }
 
-  var Reset = function (_Component) {
-    _inherits(Reset, _Component);
+  var Reset = function (_PureComponent) {
+    _inherits(Reset, _PureComponent);
 
-    function Reset(props, context) {
+    function Reset() {
       _classCallCheck(this, Reset);
 
-      var _this = _possibleConstructorReturn(this, (Reset.__proto__ || Object.getPrototypeOf(Reset)).call(this, props, context));
-
-      _this.handleClick = function (e) {
-        _this.context._form.reset();
-      };
-
-      if (!context._form) throw new Error("Reset must be inside Form");
-      return _this;
+      return _possibleConstructorReturn(this, (Reset.__proto__ || Object.getPrototypeOf(Reset)).apply(this, arguments));
     }
 
     _createClass(Reset, [{
@@ -121,18 +102,14 @@
         var _props = this.props,
             component = _props.component,
             render = _props.render,
-            rest = _objectWithoutProperties(_props, ["component", "render"]);
+            passProps = _objectWithoutProperties(_props, ["component", "render"]);
 
-        var inputProps = _extends({}, rest, {
-          type: "reset",
-          onClick: this.handleClick
-        });
         if (typeof render === "function") {
-          return render(inputProps);
+          return render(passProps);
         } else if (component === "button") {
-          return _react2.default.createElement(component, inputProps);
+          return _react2.default.createElement(component, passProps);
         } else if (component) {
-          return _react2.default.createElement(component, inputProps);
+          return _react2.default.createElement(component, passProps);
         } else {
           return null;
         }
@@ -140,14 +117,15 @@
     }]);
 
     return Reset;
-  }(_react.Component);
+  }(_react.PureComponent);
 
   Reset.displayName = "Reset";
-  Reset.contextTypes = {
-    _form: _react.PropTypes.object.isRequired
+  Reset.propTypes = {
+    render: _propTypes2.default.func,
+    component: _propTypes2.default.node
   };
   Reset.defaultProps = {
     component: "button"
   };
-  exports.default = Reset;
+  exports.default = (0, _connectors.connectReset)(Reset);
 });

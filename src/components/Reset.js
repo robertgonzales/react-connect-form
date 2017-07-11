@@ -10,6 +10,10 @@ class Reset extends PureComponent {
     component: PropTypes.node,
   }
 
+  static defaultProps = {
+    component: "button",
+  }
+
   render() {
     const { component, render, ...passProps } = this.props
     if (typeof render === "function") {

@@ -8,9 +8,11 @@ class Form extends PureComponent {
   static propTypes = {
     render: PropTypes.func,
     component: PropTypes.node,
+    noValidate: PropTypes.bool,
   }
 
   static defaultProps = {
+    component: "form",
     noValidate: true,
   }
 

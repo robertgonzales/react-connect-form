@@ -18,6 +18,11 @@ export default function connectField(ComposedComponent) {
       onBlur: PropTypes.func,
     }
 
+    static defaultProps = {
+      validators: [],
+      type: "text",
+    }
+
     constructor(props, context) {
       super(props, context)
       if (!context._form) {
@@ -48,18 +53,10 @@ export default function connectField(ComposedComponent) {
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
       const nextField = nextContext._form.fields[nextProps.name]
-      const nextValues = nextContext._form.values
       if (!this.field) return true
       return (
-        Object.keys(nextProps).some(
-          key => nextProps[key] !== this.props[key]
-        ) ||
-        Object.keys(nextField).some(
-          key => nextField[key] !== this.field[key]
-        ) ||
-        Object.keys(nextValues).some(
-          key => nextValues[key] !== this.values[key]
-        )
+        Object.keys(nextProps).some(k => nextProps[k] !== this.props[k]) ||
+        Object.keys(nextField).some(k => nextField[k] !== this.field[k])
       )
     }
 

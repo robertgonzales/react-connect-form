@@ -1,31 +1,44 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(["exports", "react", "prop-types", "../connectors"], factory);
+    define(["exports", "react"], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require("react"), require("prop-types"), require("../connectors"));
+    factory(exports, require("react"));
   } else {
     var mod = {
       exports: {}
     };
-    factory(mod.exports, global.react, global.propTypes, global.connectors);
-    global.Submit = mod.exports;
+    factory(mod.exports, global.react);
+    global.connectSubmit = mod.exports;
   }
-})(this, function (exports, _react, _propTypes, _connectors) {
+})(this, function (exports, _react) {
   "use strict";
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
+  exports.default = connectSubmit;
 
   var _react2 = _interopRequireDefault(_react);
-
-  var _propTypes2 = _interopRequireDefault(_propTypes);
 
   function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : {
       default: obj
     };
   }
+
+  var _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
 
   function _objectWithoutProperties(obj, keys) {
     var target = {};
@@ -87,45 +100,56 @@
     if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
   }
 
-  var Submit = function (_PureComponent) {
-    _inherits(Submit, _PureComponent);
+  function connectSubmit(ComposedComponent) {
+    var _class, _temp;
 
-    function Submit() {
-      _classCallCheck(this, Submit);
+    return _temp = _class = function (_Component) {
+      _inherits(_class, _Component);
 
-      return _possibleConstructorReturn(this, (Submit.__proto__ || Object.getPrototypeOf(Submit)).apply(this, arguments));
-    }
+      function _class(props, context) {
+        _classCallCheck(this, _class);
 
-    _createClass(Submit, [{
-      key: "render",
-      value: function render() {
-        var _props = this.props,
-            render = _props.render,
-            component = _props.component,
-            passProps = _objectWithoutProperties(_props, ["render", "component"]);
+        var _this = _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, props, context));
 
-        if (typeof render === "function") {
-          return render(passProps);
-        } else if (component === "button") {
-          return _react2.default.createElement(component, passProps);
-        } else if (component) {
-          return _react2.default.createElement(component, passProps);
-        } else {
-          return null;
+        _this.handleClick = function (e) {
+          if (e && typeof e.preventDefault === "function") {
+            e.preventDefault();
+          }
+          if (typeof _this.props.onClick === "function") {
+            _this.props.onClick(e);
+          }
+          _this.context._form.submit(e);
+        };
+
+        if (!context._form) {
+          throw new Error("Submit must be inside Form");
         }
+        return _this;
       }
-    }]);
 
-    return Submit;
-  }(_react.PureComponent);
+      _createClass(_class, [{
+        key: "render",
+        value: function render() {
+          var _context$_form = this.context._form,
+              registerField = _context$_form.registerField,
+              unregisterField = _context$_form.unregisterField,
+              formProps = _objectWithoutProperties(_context$_form, ["registerField", "unregisterField"]);
 
-  Submit.displayName = "Submit";
-  Submit.propTypes = {
-    render: _propTypes2.default.func,
-    component: _propTypes2.default.node
-  };
-  Submit.defaultProps = {
-    component: "button"
-  };
-  exports.default = (0, _connectors.connectSubmit)(Submit);
+          return _react2.default.createElement(ComposedComponent, _extends({}, this.props, {
+            form: formProps,
+            onClick: this.handleClick
+          }));
+        }
+      }]);
+
+      return _class;
+    }(_react.Component), _class.displayName = "connectSubmit(" + (ComposedComponent.displayName || "") + ")", _class.contextTypes = {
+      _form: _react.PropTypes.object.isRequired
+    }, _class.propTypes = {
+      type: _react.PropTypes.string.isRequired,
+      onClick: _react.PropTypes.func
+    }, _class.defaultProps = {
+      type: "submit"
+    }, _temp;
+  }
 });

@@ -10,6 +10,10 @@ class Submit extends PureComponent {
     component: PropTypes.node,
   }
 
+  static defaultProps = {
+    component: "button",
+  }
+
   render() {
     const { render, component, ...passProps } = this.props
     if (typeof render === "function") {
