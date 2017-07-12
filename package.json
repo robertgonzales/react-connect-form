@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/robertgonzales/react-controlled-form.git"
   },
-  "main": "./dist/index.js",
+  "main": "./dist",
   "author": "Robert Gonzales",
   "license": "MIT",
   "bugs": {
@@ -21,10 +21,7 @@
     "react"
   ],
   "scripts": {
-    "prepublish": "babel --plugins=transform-es2015-modules-umd,transform-class-properties,transform-export-extensions src --out-dir ./dist"
-  },
-  "standard": {
-    "parser": "babel-eslint"
+    "prepublish": "babel src --out-dir ./dist"
   },
   "devDependencies": {
     "babel-cli": "^6.6.4",
@@ -38,20 +35,12 @@
     "babel-preset-react": "^6.5.0",
     "babel-preset-stage-2": "^6.5.0",
     "babel-runtime": "^6.23.0",
-    "chai": "^3.5.0",
-    "enzyme": "^2.2.0",
     "eslint": "^2.7.0",
     "eslint-config-react-app": "^1.0.4",
     "eslint-plugin-babel": "^3.1.0",
     "eslint-plugin-react": "^4.2.3",
-    "jsdom": "^8.1.0",
-    "mocha": "^2.4.5",
-    "nodemon": "^1.9.1",
     "react": "^15.0.0",
-    "react-addons-test-utils": "^15.0.0",
-    "react-dom": "^15.0.0",
-    "sinon": "^1.17.3",
-    "standard": "^9.0.1"
+    "react-dom": "^15.0.0"
   },
   "peerDependencies": {
     "react": "^15",

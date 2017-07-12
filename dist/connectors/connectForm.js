@@ -170,8 +170,8 @@
                   count: prevField.count + 1,
                   value: value
                 })))
+                // create new field namespace.
               };
-              // create new field namespace.
             } else {
               return {
                 fields: _extends({}, prevState.fields, _defineProperty({}, name, {
@@ -198,9 +198,10 @@
                   // decrement field count.
                   count: prevField.count - 1,
                   value: (0, _utils.getDecrementValue)(prevField, fieldProps)
+                  // TODO: run validation again?
                 })))
+                // only one field registered to name.
               };
-              // only one field registered to name.
             } else {
               delete _this.validators[name];
               delete _this.initialValue[name];
