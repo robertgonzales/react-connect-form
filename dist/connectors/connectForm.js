@@ -149,25 +149,26 @@
           submitting: false,
           submitFailure: null,
           submitSuccess: null
-        }, _this.validators = {}, _this.initialValues = {}, _this.cancelOnUnmount = function (promise) {
+        }, _this.validators = {}, _this.initialValue = {}, _this.cancelOnUnmount = function (promise) {
           return (0, _utils.cancelPromise)(promise, _this._isUnmounted, { unmounted: true });
         }, _this.registerField = function (name, fieldProps) {
           _this.validators[name] = (0, _utils.getValidators)(fieldProps);
           _this.setState(function (prevState) {
             var prevField = prevState.fields[name];
             // recalculate initial values
-            if (_this.props.initialValues.hasOwnProperty(name)) {
-              _this.initialValues[name] = _this.props.initialValues[name];
+            if (_this.props.initialValue.hasOwnProperty(name)) {
+              _this.initialValue[name] = _this.props.initialValue[name];
             } else {
-              _this.initialValues[name] = (0, _utils.getInitialValue)(prevField, fieldProps);
+              _this.initialValue[name] = (0, _utils.getInitialValue)(prevField, fieldProps);
             }
+            var value = _this.props.value ? _this.props.value[name] : _this.initialValue[name];
             // field namespace is already registered.
             if (prevField) {
               return {
                 fields: _extends({}, prevState.fields, _defineProperty({}, name, _extends({}, prevField, {
                   // increment field count.
                   count: prevField.count + 1,
-                  value: _this.initialValues[name]
+                  value: value
                 })))
               };
               // create new field namespace.
@@ -182,7 +183,7 @@
                   pristine: true,
                   validated: true,
                   validating: false,
-                  value: _this.initialValues[name]
+                  value: value
                 }))
               };
             }
@@ -202,7 +203,7 @@
               // only one field registered to name.
             } else {
               delete _this.validators[name];
-              delete _this.initialValues[name];
+              delete _this.initialValue[name];
               return {
                 fields: Object.keys(prevState.fields).reduce(function (fields, key) {
                   if (key !== name) {
@@ -213,16 +214,16 @@
               };
             }
           });
-        }, _this.resetField = function (name, fieldProps, initialValues) {
+        }, _this.resetField = function (name, fieldProps, initialValue) {
           // cache prev computed state
           var prevPristine = _this.pristine;
           //
           _this.setState(function (prevState) {
             var prevField = prevState.fields[name];
-            if (initialValues.hasOwnProperty(name)) {
-              _this.initialValues[name] = initialValues[name];
+            if (initialValue.hasOwnProperty(name)) {
+              _this.initialValue[name] = initialValue[name];
             } else if (fieldProps) {
-              _this.initialValues[name] = (0, _utils.getInitialValue)(prevField, fieldProps);
+              _this.initialValue[name] = (0, _utils.getInitialValue)(prevField, fieldProps);
             }
             return {
               fields: _extends({}, prevState.fields, _defineProperty({}, name, _extends({}, prevField, {
@@ -230,11 +231,11 @@
                 pristine: true,
                 validated: true,
                 validating: false,
-                value: _this.initialValues[name]
+                value: _this.initialValue[name]
               })))
             };
           }, function () {
-            _this.props.onChange(_this.values);
+            _this.props.onChange(_this.value);
             if (prevPristine !== _this.pristine) {
               if (_this.pristine) {
                 _this.props.onPristine();
@@ -259,11 +260,11 @@
                 value: value,
                 touched: true,
                 validated: value === prevField.value,
-                pristine: _this.initialValues[name] === value
+                pristine: _this.initialValue[name] === value
               })))
             };
           }, function () {
-            _this.props.onChange(_this.values);
+            _this.props.onChange(_this.value);
             if (prevPristine !== _this.pristine) {
               if (_this.pristine) {
                 _this.props.onPristine();
@@ -366,7 +367,7 @@
           return true;
         }, _this.runFieldValidations = function (name, value) {
           return _this.validators[name].reduce(function (errors, validator) {
-            var err = validator(value, _this.values);
+            var err = validator(value, _this.value);
             if (!err) {
               return errors;
             } else if (typeof err === "string" || err instanceof Error) {
@@ -390,7 +391,7 @@
           }, []));
         }, _this.handleSubmit = function () {
           if (_this.valid) {
-            var submission = _this.props.onSubmit && _this.props.onSubmit(_this.values);
+            var submission = _this.props.onSubmit && _this.props.onSubmit(_this.value);
             var isAsync = submission && typeof submission.then === "function";
             if (isAsync) {
               _this.setState({
@@ -430,7 +431,7 @@
           .resolve(_this.validateForm()).then(_this.handleSubmit).then(_this.handleSubmitSuccess).catch(_this.handleSubmitFailure);
         }, _this.reset = function () {
           Object.keys(_this.state.fields).forEach(function (name) {
-            return _this.resetField(name, null, _this.props.initialValues);
+            return _this.resetField(name, null, _this.props.initialValue);
           });
         }, _temp), _possibleConstructorReturn(_this, _ret);
       }
@@ -453,7 +454,7 @@
               pristine: this.pristine,
               focused: this.focused,
               touched: this.touched,
-              values: this.values,
+              value: this.value,
               errors: this.errors,
               valid: this.valid,
               submit: this.submit,
@@ -466,10 +467,25 @@
         value: function componentWillReceiveProps(nextProps, nextState) {
           var _this2 = this;
 
-          if (!(0, _utils.deepEqual)(nextProps.initialValues, this.props.initialValues)) {
-            Object.keys(nextProps.initialValues).forEach(function (name) {
+          console.log("componentWillReceiveProps", nextProps.value);
+          if (nextProps.value) {
+            Object.keys(nextProps.value).forEach(function (name) {
               if (_this2.state.fields[name]) {
-                _this2.resetField(name, null, nextProps.initialValues);
+                if (nextProps.value[name] !== _this2.state.fields[name].value) {
+                  _this2.setState(function (prevState) {
+                    return {
+                      fields: _extends({}, prevState.fields, _defineProperty({}, name, _extends({}, prevState.fields[name], {
+                        value: nextProps.value[name]
+                      })))
+                    };
+                  });
+                }
+              }
+            });
+          } else if (!(0, _utils.deepEqual)(nextProps.initialValue, this.props.initialValue)) {
+            Object.keys(nextProps.initialValue).forEach(function (name) {
+              if (_this2.state.fields[name]) {
+                _this2.resetField(name, null, nextProps.initialValue);
               }
             });
           }
@@ -488,7 +504,7 @@
         key: "render",
         value: function render() {
           var _props = this.props,
-              initialValues = _props.initialValues,
+              initialValue = _props.initialValue,
               onSubmit = _props.onSubmit,
               onSubmitSuccess = _props.onSubmitSuccess,
               onSubmitFailure = _props.onSubmitFailure,
@@ -499,7 +515,7 @@
               onBlur = _props.onBlur,
               onValid = _props.onValid,
               onInvalid = _props.onInvalid,
-              passProps = _objectWithoutProperties(_props, ["initialValues", "onSubmit", "onSubmitSuccess", "onSubmitFailure", "onChange", "onPristine", "onDirty", "onFocus", "onBlur", "onValid", "onInvalid"]);
+              passProps = _objectWithoutProperties(_props, ["initialValue", "onSubmit", "onSubmitSuccess", "onSubmitFailure", "onChange", "onPristine", "onDirty", "onFocus", "onBlur", "onValid", "onInvalid"]);
 
           var _getChildContext = this.getChildContext(),
               registerField = _getChildContext.registerField,
@@ -540,13 +556,13 @@
           });
         }
       }, {
-        key: "values",
+        key: "value",
         get: function get() {
           var _this4 = this;
 
-          return Object.keys(this.state.fields).reduce(function (values, name) {
-            values[name] = _this4.state.fields[name].value;
-            return values;
+          return Object.keys(this.state.fields).reduce(function (value, name) {
+            value[name] = _this4.state.fields[name].value;
+            return value;
           }, {});
         }
       }, {
@@ -565,7 +581,8 @@
 
       return _class;
     }(_react.Component), _class.displayName = "connectForm(" + (ComposedComponent.displayName || "") + ")", _class.propTypes = {
-      initialValues: _react.PropTypes.object,
+      value: _react.PropTypes.object,
+      initialValue: _react.PropTypes.object,
       onSubmit: _react.PropTypes.func,
       onSubmitSuccess: _react.PropTypes.func,
       onSubmitFailure: _react.PropTypes.func,
@@ -579,11 +596,11 @@
     }, _class.contextTypes = {
       _form: _react.PropTypes.object
     }, _class.defaultProps = {
-      initialValues: {},
-      onSubmit: function onSubmit(values) {},
+      initialValue: {},
+      onSubmit: function onSubmit(value) {},
       onSubmitSuccess: function onSubmitSuccess(result) {},
       onSubmitFailure: function onSubmitFailure(err) {},
-      onChange: function onChange(values) {},
+      onChange: function onChange(value) {},
       onPristine: function onPristine() {},
       onDirty: function onDirty() {},
       onFocus: function onFocus() {},

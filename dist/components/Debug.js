@@ -1,8 +1,8 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports', 'react'], factory);
+    define(["exports", "react"], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require('react'));
+    factory(exports, require("react"));
   } else {
     var mod = {
       exports: {}
@@ -11,7 +11,7 @@
     global.Debug = mod.exports;
   }
 })(this, function (exports, _react) {
-  'use strict';
+  "use strict";
 
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -104,19 +104,19 @@
           if (prev[key].length !== next[key].length || prev[key].some(function (item, index) {
             return item !== next[key][index];
           })) {
-            changes.push('\t' + key + ': ' + JSON.stringify(prev[key]) + ' => ' + JSON.stringify(next[key]));
+            changes.push("\t" + key + ": " + JSON.stringify(prev[key]) + " => " + JSON.stringify(next[key]));
           }
-        } else if (_typeof(prev[key]) === 'object') {
+        } else if (_typeof(prev[key]) === "object") {
           var childChanges = getChanges(prev[key], next[key]);
           if (childChanges) {
-            changes.push(key + '\n' + childChanges);
+            changes.push(key + "\n" + childChanges);
           }
         } else {
-          changes.push('\t' + key + ': ' + JSON.stringify(prev[key]) + ' => ' + JSON.stringify(next[key]));
+          changes.push("\t" + key + ": " + JSON.stringify(prev[key]) + " => " + JSON.stringify(next[key]));
         }
       }
       return changes;
-    }, []).join('\n');
+    }, []).join("\n");
   };
 
   var Debug = function (_Component) {
@@ -127,12 +127,12 @@
 
       var _this = _possibleConstructorReturn(this, (Debug.__proto__ || Object.getPrototypeOf(Debug)).call(this, props, context));
 
-      if (!context._form) throw new Error('Debug must be inside Form');
+      if (!context._form) throw new Error("Debug must be inside Form");
       return _this;
     }
 
     _createClass(Debug, [{
-      key: 'shouldComponentUpdate',
+      key: "shouldComponentUpdate",
       value: function shouldComponentUpdate(nextProps, nextState, nextContext) {
         var _this2 = this;
 
@@ -144,15 +144,15 @@
         });
       }
     }, {
-      key: 'componentDidUpdate',
+      key: "componentDidUpdate",
       value: function componentDidUpdate(prevProps, prevState, prevContext) {
         var _prevContext$_form = prevContext._form,
             prevFields = _prevContext$_form.fields,
-            prevForm = _objectWithoutProperties(_prevContext$_form, ['fields']);
+            prevForm = _objectWithoutProperties(_prevContext$_form, ["fields"]);
 
         var _context$_form = this.context._form,
             nextFields = _context$_form.fields,
-            nextForm = _objectWithoutProperties(_context$_form, ['fields']);
+            nextForm = _objectWithoutProperties(_context$_form, ["fields"]);
 
         if (this.props.log) {
           if (this.props.name) {
@@ -165,27 +165,27 @@
         }
       }
     }, {
-      key: 'render',
+      key: "render",
       value: function render() {
         var _form = this.form,
             fields = _form.fields,
-            rest = _objectWithoutProperties(_form, ['fields']);
+            rest = _objectWithoutProperties(_form, ["fields"]);
 
         if (!this.props.render) {
           return null;
         }
         return _react2.default.createElement(
-          'pre',
+          "pre",
           null,
           _react2.default.createElement(
-            'code',
+            "code",
             null,
             this.props.name ? JSON.stringify(fields[name], null, 2) : this.props.field ? JSON.stringify(fields, null, 2) : JSON.stringify(rest, null, 2)
           )
         );
       }
     }, {
-      key: 'form',
+      key: "form",
       get: function get() {
         return this.context._form;
       }
@@ -194,7 +194,7 @@
     return Debug;
   }(_react.Component);
 
-  Debug.displayName = 'Debug';
+  Debug.displayName = "Debug";
   Debug.contextTypes = {
     _form: _react.PropTypes.object.isRequired
   };
@@ -205,7 +205,7 @@
     log: _react.PropTypes.bool
   };
   Debug.defaultProps = {
-    log: true
+    render: true
   };
   exports.default = Debug;
 });

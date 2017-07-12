@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component, PropTypes } from "react"
 
 const getChanges = (prev, next) => {
   if (!prev) {
@@ -19,10 +19,10 @@ const getChanges = (prev, next) => {
               `\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(next[key])}`
             )
           }
-        } else if (typeof prev[key] === 'object') {
+        } else if (typeof prev[key] === "object") {
           const childChanges = getChanges(prev[key], next[key])
           if (childChanges) {
-            changes.push(key + '\n' + childChanges)
+            changes.push(key + "\n" + childChanges)
           }
         } else {
           changes.push(
@@ -32,30 +32,30 @@ const getChanges = (prev, next) => {
       }
       return changes
     }, [])
-    .join('\n')
+    .join("\n")
 }
 
 export default class Debug extends Component {
-  static displayName = 'Debug'
+  static displayName = "Debug"
 
   static contextTypes = {
-    _form: PropTypes.object.isRequired
+    _form: PropTypes.object.isRequired,
   }
 
   static propTypes = {
     name: PropTypes.string,
     fields: PropTypes.bool,
     render: PropTypes.bool,
-    log: PropTypes.bool
+    log: PropTypes.bool,
   }
 
   static defaultProps = {
-    log: true
+    render: true,
   }
 
   constructor(props, context) {
     super(props, context)
-    if (!context._form) throw new Error('Debug must be inside Form')
+    if (!context._form) throw new Error("Debug must be inside Form")
   }
 
   shouldComponentUpdate(nextProps, nextState, nextContext) {

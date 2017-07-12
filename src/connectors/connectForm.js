@@ -14,7 +14,8 @@ export default function connectForm(ComposedComponent) {
     static displayName = `connectForm(${ComposedComponent.displayName || ""})`
 
     static propTypes = {
-      initialValues: PropTypes.object,
+      value: PropTypes.object,
+      initialValue: PropTypes.object,
       onSubmit: PropTypes.func,
       onSubmitSuccess: PropTypes.func,
       onSubmitFailure: PropTypes.func,
@@ -32,11 +33,11 @@ export default function connectForm(ComposedComponent) {
     }
 
     static defaultProps = {
-      initialValues: {},
-      onSubmit: values => {},
+      initialValue: {},
+      onSubmit: value => {},
       onSubmitSuccess: result => {},
       onSubmitFailure: err => {},
-      onChange: values => {},
+      onChange: value => {},
       onPristine: () => {},
       onDirty: () => {},
       onFocus: () => {},
@@ -56,7 +57,7 @@ export default function connectForm(ComposedComponent) {
       submitSuccess: null,
     }
     validators = {}
-    initialValues = {}
+    initialValue = {}
 
     getChildContext() {
       return {
@@ -74,7 +75,7 @@ export default function connectForm(ComposedComponent) {
           pristine: this.pristine,
           focused: this.focused,
           touched: this.touched,
-          values: this.values,
+          value: this.value,
           errors: this.errors,
           valid: this.valid,
           submit: this.submit,
@@ -84,10 +85,29 @@ export default function connectForm(ComposedComponent) {
     }
 
     componentWillReceiveProps(nextProps, nextState) {
-      if (!deepEqual(nextProps.initialValues, this.props.initialValues)) {
-        Object.keys(nextProps.initialValues).forEach(name => {
+      console.log("componentWillReceiveProps", nextProps.value)
+      if (nextProps.value) {
+        Object.keys(nextProps.value).forEach(name => {
           if (this.state.fields[name]) {
-            this.resetField(name, null, nextProps.initialValues)
+            if (nextProps.value[name] !== this.state.fields[name].value) {
+              this.setState(prevState => {
+                return {
+                  fields: {
+                    ...prevState.fields,
+                    [name]: {
+                      ...prevState.fields[name],
+                      value: nextProps.value[name],
+                    },
+                  },
+                }
+              })
+            }
+          }
+        })
+      } else if (!deepEqual(nextProps.initialValue, this.props.initialValue)) {
+        Object.keys(nextProps.initialValue).forEach(name => {
+          if (this.state.fields[name]) {
+            this.resetField(name, null, nextProps.initialValue)
           }
         })
       }
@@ -125,10 +145,10 @@ export default function connectForm(ComposedComponent) {
       )
     }
 
-    get values() {
-      return Object.keys(this.state.fields).reduce((values, name) => {
-        values[name] = this.state.fields[name].value
-        return values
+    get value() {
+      return Object.keys(this.state.fields).reduce((value, name) => {
+        value[name] = this.state.fields[name].value
+        return value
       }, {})
     }
 
@@ -146,11 +166,14 @@ export default function connectForm(ComposedComponent) {
       this.setState(prevState => {
         const prevField = prevState.fields[name]
         // recalculate initial values
-        if (this.props.initialValues.hasOwnProperty(name)) {
-          this.initialValues[name] = this.props.initialValues[name]
+        if (this.props.initialValue.hasOwnProperty(name)) {
+          this.initialValue[name] = this.props.initialValue[name]
         } else {
-          this.initialValues[name] = getInitialValue(prevField, fieldProps)
+          this.initialValue[name] = getInitialValue(prevField, fieldProps)
         }
+        const value = this.props.value
+          ? this.props.value[name]
+          : this.initialValue[name]
         // field namespace is already registered.
         if (prevField) {
           return {
@@ -160,7 +183,7 @@ export default function connectForm(ComposedComponent) {
                 ...prevField,
                 // increment field count.
                 count: prevField.count + 1,
-                value: this.initialValues[name],
+                value: value,
               },
             },
           }
@@ -178,7 +201,7 @@ export default function connectForm(ComposedComponent) {
                 pristine: true,
                 validated: true,
                 validating: false,
-                value: this.initialValues[name],
+                value: value,
               },
             },
           }
@@ -206,7 +229,7 @@ export default function connectForm(ComposedComponent) {
           // only one field registered to name.
         } else {
           delete this.validators[name]
-          delete this.initialValues[name]
+          delete this.initialValue[name]
           return {
             fields: Object.keys(prevState.fields).reduce((fields, key) => {
               if (key !== name) {
@@ -219,17 +242,17 @@ export default function connectForm(ComposedComponent) {
       })
     }
 
-    resetField = (name, fieldProps, initialValues) => {
+    resetField = (name, fieldProps, initialValue) => {
       // cache prev computed state
       const prevPristine = this.pristine
       //
       this.setState(
         prevState => {
           const prevField = prevState.fields[name]
-          if (initialValues.hasOwnProperty(name)) {
-            this.initialValues[name] = initialValues[name]
+          if (initialValue.hasOwnProperty(name)) {
+            this.initialValue[name] = initialValue[name]
           } else if (fieldProps) {
-            this.initialValues[name] = getInitialValue(prevField, fieldProps)
+            this.initialValue[name] = getInitialValue(prevField, fieldProps)
           }
           return {
             fields: {
@@ -240,13 +263,13 @@ export default function connectForm(ComposedComponent) {
                 pristine: true,
                 validated: true,
                 validating: false,
-                value: this.initialValues[name],
+                value: this.initialValue[name],
               },
             },
           }
         },
         () => {
-          this.props.onChange(this.values)
+          this.props.onChange(this.value)
           if (prevPristine !== this.pristine) {
             if (this.pristine) {
               this.props.onPristine()
@@ -278,13 +301,13 @@ export default function connectForm(ComposedComponent) {
                 value: value,
                 touched: true,
                 validated: value === prevField.value,
-                pristine: this.initialValues[name] === value,
+                pristine: this.initialValue[name] === value,
               },
             },
           }
         },
         () => {
-          this.props.onChange(this.values)
+          this.props.onChange(this.value)
           if (prevPristine !== this.pristine) {
             if (this.pristine) {
               this.props.onPristine()
@@ -412,7 +435,7 @@ export default function connectForm(ComposedComponent) {
     runFieldValidations = (name, value) => {
       return this.validators[name].reduce(
         (errors, validator) => {
-          let err = validator(value, this.values)
+          let err = validator(value, this.value)
           if (!err) {
             return errors
           } else if (typeof err === "string" || err instanceof Error) {
@@ -451,7 +474,7 @@ export default function connectForm(ComposedComponent) {
     handleSubmit = () => {
       if (this.valid) {
         const submission =
-          this.props.onSubmit && this.props.onSubmit(this.values)
+          this.props.onSubmit && this.props.onSubmit(this.value)
         const isAsync = submission && typeof submission.then === "function"
         if (isAsync) {
           this.setState({
@@ -511,14 +534,14 @@ export default function connectForm(ComposedComponent) {
 
     reset = () => {
       Object.keys(this.state.fields).forEach(name =>
-        this.resetField(name, null, this.props.initialValues)
+        this.resetField(name, null, this.props.initialValue)
       )
     }
 
     render() {
       // Strip out props that are handled internally.
       const {
-        initialValues,
+        initialValue,
         onSubmit,
         onSubmitSuccess,
         onSubmitFailure,
