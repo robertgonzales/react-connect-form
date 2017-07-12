@@ -20,9 +20,11 @@ export default function connectForm(ComposedComponent) {
       onSubmitFailure: PropTypes.func,
       onChange: PropTypes.func,
       onPristine: PropTypes.func,
-      onTouched: PropTypes.func,
-      onFocused: PropTypes.func,
+      onDirty: PropTypes.func,
+      onFocus: PropTypes.func,
+      onBlur: PropTypes.func,
       onValid: PropTypes.func,
+      onInvalid: PropTypes.func,
     }
 
     static contextTypes = {
@@ -31,9 +33,16 @@ export default function connectForm(ComposedComponent) {
 
     static defaultProps = {
       initialValues: {},
-      onSubmit: e => console.log("onSubmit", e),
-      onSubmitSuccess: e => console.log("onSubmitSuccess", e),
-      onSubmitFailure: e => console.log("onSubmitFailure", e),
+      onSubmit: values => {},
+      onSubmitSuccess: result => {},
+      onSubmitFailure: err => {},
+      onChange: values => {},
+      onPristine: () => {},
+      onDirty: () => {},
+      onFocus: () => {},
+      onBlur: () => {},
+      onValid: () => {},
+      onInvalid: errors => {},
     }
 
     static childContextTypes = {
@@ -132,49 +141,6 @@ export default function connectForm(ComposedComponent) {
       }, {})
     }
 
-    handleChange = prev => {
-      this.props.onChange && this.props.onChange({ ...this.values })
-      if (this.props.onPristine && prev.pristine != this.pristine) {
-        this.props.onPristine(this.pristine)
-      }
-      if (this.props.onTouched && prev.touched != this.touched) {
-        this.props.onTouched(this.touched)
-      }
-      if (this.props.onValid && prev.valid != this.valid) {
-        this.props.onValid(this.valid)
-      }
-      if (this.props.onFocused && prev.focused != this.focused) {
-        this.props.onFocused(this.focused)
-      }
-      // TODO: field validation only occurs after form attempts submit
-      // TODO: besieds that, validation is async so prev and current error values are always the same
-      if (this.props.onErrors) {
-        const errorsChanged = (() => {
-          for (let key in { ...prev.errors, ...this.errors }) {
-            if (
-              prev.errors.hasOwnProperty(key) &&
-              this.errors.hasOwnProperty(key)
-            ) {
-              prev.errors[key].forEach(error => {
-                if (
-                  !this.errors[key].find(this_error => {
-                    return error == this_error
-                  })
-                ) {
-                  return true
-                }
-              })
-            } else {
-              return true
-            }
-          }
-        })()
-        if (errorsChanged) {
-          this.props.onErrors(this.errors)
-        }
-      }
-    }
-
     registerField = (name, fieldProps) => {
       this.validators[name] = getValidators(fieldProps)
       this.setState(prevState => {
@@ -254,38 +220,48 @@ export default function connectForm(ComposedComponent) {
     }
 
     resetField = (name, fieldProps, initialValues) => {
-      this.setState(prevState => {
-        const prevField = prevState.fields[name]
-        if (initialValues.hasOwnProperty(name)) {
-          this.initialValues[name] = initialValues[name]
-        } else if (fieldProps) {
-          this.initialValues[name] = getInitialValue(prevField, fieldProps)
-        }
-        return {
-          fields: {
-            ...prevState.fields,
-            [name]: {
-              ...prevField,
-              touched: false,
-              pristine: true,
-              validated: true,
-              validating: false,
-              value: this.initialValues[name],
+      // cache prev computed state
+      const prevPristine = this.pristine
+      //
+      this.setState(
+        prevState => {
+          const prevField = prevState.fields[name]
+          if (initialValues.hasOwnProperty(name)) {
+            this.initialValues[name] = initialValues[name]
+          } else if (fieldProps) {
+            this.initialValues[name] = getInitialValue(prevField, fieldProps)
+          }
+          return {
+            fields: {
+              ...prevState.fields,
+              [name]: {
+                ...prevField,
+                touched: false,
+                pristine: true,
+                validated: true,
+                validating: false,
+                value: this.initialValues[name],
+              },
             },
-          },
+          }
+        },
+        () => {
+          this.props.onChange(this.values)
+          if (prevPristine !== this.pristine) {
+            if (this.pristine) {
+              this.props.onPristine()
+            } else {
+              this.props.onDirty()
+            }
+          }
         }
-      })
+      )
     }
 
     changeField = (name, event) => {
-      const prevComputedValues = {
-        pristine: this.pristine,
-        touched: this.touched,
-        valid: this.valid,
-        focused: this.focused,
-        values: this.values,
-        errors: this.errors,
-      }
+      // cache prev computed state
+      const prevPristine = this.pristine
+      //
       this.setState(
         prevState => {
           const prevField = prevState.fields[name]
@@ -308,57 +284,88 @@ export default function connectForm(ComposedComponent) {
           }
         },
         () => {
-          this.handleChange(prevComputedValues)
+          this.props.onChange(this.values)
+          if (prevPristine !== this.pristine) {
+            if (this.pristine) {
+              this.props.onPristine()
+            } else {
+              this.props.onDirty()
+            }
+          }
         }
       )
     }
 
     focusField = name => {
-      this.setState(prevState => {
-        return {
-          fields: {
-            ...prevState.fields,
-            [name]: {
-              ...prevState.fields[name],
-              focused: true,
+      this.setState(
+        prevState => {
+          return {
+            fields: {
+              ...prevState.fields,
+              [name]: {
+                ...prevState.fields[name],
+                focused: true,
+              },
             },
-          },
+          }
+        },
+        () => {
+          this.props.onFocus()
         }
-      })
+      )
     }
 
     blurField = name => {
-      this.setState(prevState => {
-        return {
-          fields: {
-            ...prevState.fields,
-            [name]: {
-              ...prevState.fields[name],
-              focused: false,
-              touched: true,
+      this.setState(
+        prevState => {
+          return {
+            fields: {
+              ...prevState.fields,
+              [name]: {
+                ...prevState.fields[name],
+                focused: false,
+                touched: true,
+              },
             },
-          },
+          }
+        },
+        () => {
+          if (!this.focused) {
+            this.props.onBlur()
+          }
         }
-      })
+      )
       this.validateField(name, this.state.fields[name].value)
     }
 
     // TODO: better name (also unwarns field)
     warnField = (name, errors, validating) => {
+      const prevValid = this.valid
       errors = errors.filter(err => err).map(err => err.message || err)
-      this.setState(prevState => {
-        return {
-          fields: {
-            ...prevState.fields,
-            [name]: {
-              ...prevState.fields[name],
-              errors: errors,
-              validating: validating,
-              validated: !errors.length && !validating,
+      this.setState(
+        prevState => {
+          return {
+            fields: {
+              ...prevState.fields,
+              [name]: {
+                ...prevState.fields[name],
+                errors: errors,
+                validating: validating,
+                validated: !errors.length && !validating,
+              },
             },
-          },
+          }
+        },
+        () => {
+          if (prevValid !== this.valid) {
+            if (this.valid) {
+              this.props.onValid()
+            } else {
+              this.props.onInvalid(this.errors)
+            }
+          }
         }
-      })
+      )
     }
 
     validateField = (name, value) => {
@@ -517,9 +524,11 @@ export default function connectForm(ComposedComponent) {
         onSubmitFailure,
         onChange,
         onPristine,
-        onTouched,
-        onFocused,
+        onDirty,
+        onFocus,
+        onBlur,
         onValid,
+        onInvalid,
         ...passProps
       } = this.props
       const {

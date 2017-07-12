@@ -65,12 +65,6 @@
     return obj;
   }
 
-  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-    return typeof obj;
-  } : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-  };
-
   var _extends = Object.assign || function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
@@ -157,50 +151,6 @@
           submitSuccess: null
         }, _this.validators = {}, _this.initialValues = {}, _this.cancelOnUnmount = function (promise) {
           return (0, _utils.cancelPromise)(promise, _this._isUnmounted, { unmounted: true });
-        }, _this.handleChange = function (prev) {
-          _this.props.onChange && _this.props.onChange(_extends({}, _this.values));
-          if (_this.props.onPristine && prev.pristine != _this.pristine) {
-            _this.props.onPristine(_this.pristine);
-          }
-          if (_this.props.onTouched && prev.touched != _this.touched) {
-            _this.props.onTouched(_this.touched);
-          }
-          if (_this.props.onValid && prev.valid != _this.valid) {
-            _this.props.onValid(_this.valid);
-          }
-          if (_this.props.onFocused && prev.focused != _this.focused) {
-            _this.props.onFocused(_this.focused);
-          }
-          // TODO: field validation only occurs after form attempts submit
-          // TODO: besieds that, validation is async so prev and current error values are always the same
-          if (_this.props.onErrors) {
-            var errorsChanged = function () {
-              var _loop = function _loop(key) {
-                if (prev.errors.hasOwnProperty(key) && _this.errors.hasOwnProperty(key)) {
-                  prev.errors[key].forEach(function (error) {
-                    if (!_this.errors[key].find(function (this_error) {
-                      return error == this_error;
-                    })) {
-                      return true;
-                    }
-                  });
-                } else {
-                  return {
-                    v: true
-                  };
-                }
-              };
-
-              for (var key in _extends({}, prev.errors, _this.errors)) {
-                var _ret2 = _loop(key);
-
-                if ((typeof _ret2 === "undefined" ? "undefined" : _typeof(_ret2)) === "object") return _ret2.v;
-              }
-            }();
-            if (errorsChanged) {
-              _this.props.onErrors(_this.errors);
-            }
-          }
         }, _this.registerField = function (name, fieldProps) {
           _this.validators[name] = (0, _utils.getValidators)(fieldProps);
           _this.setState(function (prevState) {
@@ -264,6 +214,9 @@
             }
           });
         }, _this.resetField = function (name, fieldProps, initialValues) {
+          // cache prev computed state
+          var prevPristine = _this.pristine;
+          //
           _this.setState(function (prevState) {
             var prevField = prevState.fields[name];
             if (initialValues.hasOwnProperty(name)) {
@@ -280,16 +233,20 @@
                 value: _this.initialValues[name]
               })))
             };
+          }, function () {
+            _this.props.onChange(_this.values);
+            if (prevPristine !== _this.pristine) {
+              if (_this.pristine) {
+                _this.props.onPristine();
+              } else {
+                _this.props.onDirty();
+              }
+            }
           });
         }, _this.changeField = function (name, event) {
-          var prevComputedValues = {
-            pristine: _this.pristine,
-            touched: _this.touched,
-            valid: _this.valid,
-            focused: _this.focused,
-            values: _this.values,
-            errors: _this.errors
-          };
+          // cache prev computed state
+          var prevPristine = _this.pristine;
+          //
           _this.setState(function (prevState) {
             var prevField = prevState.fields[name];
             var value = (0, _utils.getNextValue)(event, prevField);
@@ -306,7 +263,14 @@
               })))
             };
           }, function () {
-            _this.handleChange(prevComputedValues);
+            _this.props.onChange(_this.values);
+            if (prevPristine !== _this.pristine) {
+              if (_this.pristine) {
+                _this.props.onPristine();
+              } else {
+                _this.props.onDirty();
+              }
+            }
           });
         }, _this.focusField = function (name) {
           _this.setState(function (prevState) {
@@ -315,6 +279,8 @@
                 focused: true
               })))
             };
+          }, function () {
+            _this.props.onFocus();
           });
         }, _this.blurField = function (name) {
           _this.setState(function (prevState) {
@@ -324,9 +290,14 @@
                 touched: true
               })))
             };
+          }, function () {
+            if (!_this.focused) {
+              _this.props.onBlur();
+            }
           });
           _this.validateField(name, _this.state.fields[name].value);
         }, _this.warnField = function (name, errors, validating) {
+          var prevValid = _this.valid;
           errors = errors.filter(function (err) {
             return err;
           }).map(function (err) {
@@ -340,6 +311,14 @@
                 validated: !errors.length && !validating
               })))
             };
+          }, function () {
+            if (prevValid !== _this.valid) {
+              if (_this.valid) {
+                _this.props.onValid();
+              } else {
+                _this.props.onInvalid(_this.errors);
+              }
+            }
           });
         }, _this.validateField = function (name, value) {
           if (!_this.shouldFieldValidate(name, value)) {
@@ -515,10 +494,12 @@
               onSubmitFailure = _props.onSubmitFailure,
               onChange = _props.onChange,
               onPristine = _props.onPristine,
-              onTouched = _props.onTouched,
-              onFocused = _props.onFocused,
+              onDirty = _props.onDirty,
+              onFocus = _props.onFocus,
+              onBlur = _props.onBlur,
               onValid = _props.onValid,
-              passProps = _objectWithoutProperties(_props, ["initialValues", "onSubmit", "onSubmitSuccess", "onSubmitFailure", "onChange", "onPristine", "onTouched", "onFocused", "onValid"]);
+              onInvalid = _props.onInvalid,
+              passProps = _objectWithoutProperties(_props, ["initialValues", "onSubmit", "onSubmitSuccess", "onSubmitFailure", "onChange", "onPristine", "onDirty", "onFocus", "onBlur", "onValid", "onInvalid"]);
 
           var _getChildContext = this.getChildContext(),
               registerField = _getChildContext.registerField,
@@ -590,22 +571,25 @@
       onSubmitFailure: _react.PropTypes.func,
       onChange: _react.PropTypes.func,
       onPristine: _react.PropTypes.func,
-      onTouched: _react.PropTypes.func,
-      onFocused: _react.PropTypes.func,
-      onValid: _react.PropTypes.func
+      onDirty: _react.PropTypes.func,
+      onFocus: _react.PropTypes.func,
+      onBlur: _react.PropTypes.func,
+      onValid: _react.PropTypes.func,
+      onInvalid: _react.PropTypes.func
     }, _class.contextTypes = {
       _form: _react.PropTypes.object
     }, _class.defaultProps = {
       initialValues: {},
-      onSubmit: function onSubmit(e) {
-        return console.log("onSubmit", e);
-      },
-      onSubmitSuccess: function onSubmitSuccess(e) {
-        return console.log("onSubmitSuccess", e);
-      },
-      onSubmitFailure: function onSubmitFailure(e) {
-        return console.log("onSubmitFailure", e);
-      }
+      onSubmit: function onSubmit(values) {},
+      onSubmitSuccess: function onSubmitSuccess(result) {},
+      onSubmitFailure: function onSubmitFailure(err) {},
+      onChange: function onChange(values) {},
+      onPristine: function onPristine() {},
+      onDirty: function onDirty() {},
+      onFocus: function onFocus() {},
+      onBlur: function onBlur() {},
+      onValid: function onValid() {},
+      onInvalid: function onInvalid(errors) {}
     }, _class.childContextTypes = {
       _form: _react.PropTypes.object.isRequired
     }, _temp2;
