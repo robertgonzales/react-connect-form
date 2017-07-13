@@ -245,14 +245,23 @@
               }
             }
           });
-        }, _this.changeField = function (name, event) {
-          // cache prev computed state
+        }, _this.changeField = function (name, event, force) {
+          // cache prev pristine computed state to compare in setState callback
           var prevPristine = _this.pristine;
-          //
+          // perform updates for change event
           _this.setState(function (prevState) {
             var prevField = prevState.fields[name];
+            // value may need to be altered before updating
+            // e.g. single checkbox value (true) vs multiple checkbox value ([1, 2])
             var value = (0, _utils.getNextValue)(event, prevField);
-            // TODO: ensure this is actually merging setStates
+            // if controlled via value prop, don't set state — simply pass up value
+            // responsibility moves to parent component to pass updated value prop
+            if (_this.props.value && !force) {
+              _this.props.onChange(_extends({}, _this.value, _defineProperty({}, name, value)));
+              // abort setState
+              return;
+            }
+            // TODO: make sure sync validation merges set states.
             if (prevField.errors.length) {
               _this.validateField(name, value);
             }
@@ -265,7 +274,9 @@
               })))
             };
           }, function () {
-            _this.props.onChange(_this.value);
+            if (!_this.props.value || force) {
+              _this.props.onChange(_this.value);
+            }
             if (prevPristine !== _this.pristine) {
               if (_this.pristine) {
                 _this.props.onPristine();
@@ -299,6 +310,7 @@
           });
           _this.validateField(name, _this.state.fields[name].value);
         }, _this.warnField = function (name, errors, validating) {
+          // cache prev valid computed state
           var prevValid = _this.valid;
           errors = errors.filter(function (err) {
             return err;
@@ -357,7 +369,7 @@
               return _this.warnField(name, [].concat(_toConsumableArray(errors), _toConsumableArray(syncErrors)), false);
             });
           } else {
-            Promise.resolve();
+            return Promise.resolve();
           }
         }, _this.shouldFieldValidate = function (name, nextValue) {
           var _this$state$fields$na = _this.state.fields[name],
@@ -468,18 +480,11 @@
         value: function componentWillReceiveProps(nextProps, nextState) {
           var _this2 = this;
 
-          console.log("componentWillReceiveProps", nextProps.value);
           if (nextProps.value) {
             Object.keys(nextProps.value).forEach(function (name) {
               if (_this2.state.fields[name]) {
                 if (nextProps.value[name] !== _this2.state.fields[name].value) {
-                  _this2.setState(function (prevState) {
-                    return {
-                      fields: _extends({}, prevState.fields, _defineProperty({}, name, _extends({}, prevState.fields[name], {
-                        value: nextProps.value[name]
-                      })))
-                    };
-                  });
+                  _this2.changeField(name, nextProps.value[name], true);
                 }
               }
             });
@@ -505,6 +510,7 @@
         key: "render",
         value: function render() {
           var _props = this.props,
+              value = _props.value,
               initialValue = _props.initialValue,
               onSubmit = _props.onSubmit,
               onSubmitSuccess = _props.onSubmitSuccess,
@@ -516,14 +522,13 @@
               onBlur = _props.onBlur,
               onValid = _props.onValid,
               onInvalid = _props.onInvalid,
-              passProps = _objectWithoutProperties(_props, ["initialValue", "onSubmit", "onSubmitSuccess", "onSubmitFailure", "onChange", "onPristine", "onDirty", "onFocus", "onBlur", "onValid", "onInvalid"]);
+              passProps = _objectWithoutProperties(_props, ["value", "initialValue", "onSubmit", "onSubmitSuccess", "onSubmitFailure", "onChange", "onPristine", "onDirty", "onFocus", "onBlur", "onValid", "onInvalid"]);
 
-          var _getChildContext = this.getChildContext(),
-              registerField = _getChildContext.registerField,
-              unregisterField = _getChildContext.unregisterField,
-              formProps = _objectWithoutProperties(_getChildContext, ["registerField", "unregisterField"]);
+          var _getChildContext$_for = this.getChildContext()._form,
+              registerField = _getChildContext$_for.registerField,
+              unregisterField = _getChildContext$_for.unregisterField,
+              formProps = _objectWithoutProperties(_getChildContext$_for, ["registerField", "unregisterField"]);
 
-          // TODO: okay to call manually?
           return _react2.default.createElement(ComposedComponent, _extends({}, passProps, { form: formProps }));
         }
       }, {

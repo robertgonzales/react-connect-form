@@ -85,22 +85,11 @@ export default function connectForm(ComposedComponent) {
     }
 
     componentWillReceiveProps(nextProps, nextState) {
-      console.log("componentWillReceiveProps", nextProps.value)
       if (nextProps.value) {
         Object.keys(nextProps.value).forEach(name => {
           if (this.state.fields[name]) {
             if (nextProps.value[name] !== this.state.fields[name].value) {
-              this.setState(prevState => {
-                return {
-                  fields: {
-                    ...prevState.fields,
-                    [name]: {
-                      ...prevState.fields[name],
-                      value: nextProps.value[name],
-                    },
-                  },
-                }
-              })
+              this.changeField(name, nextProps.value[name], true)
             }
           }
         })
@@ -281,15 +270,26 @@ export default function connectForm(ComposedComponent) {
       )
     }
 
-    changeField = (name, event) => {
-      // cache prev computed state
+    // force: only used when in controlled mode (via this.props.value).
+    // forces uncontrolled behavior (setState) instead of controlled behavior (onChange only)
+    changeField = (name, event, force) => {
+      // cache prev pristine computed state to compare in setState callback
       const prevPristine = this.pristine
-      //
+      // perform updates for change event
       this.setState(
         prevState => {
           const prevField = prevState.fields[name]
+          // value may need to be altered before updating
+          // e.g. single checkbox value (true) vs multiple checkbox value ([1, 2])
           const value = getNextValue(event, prevField)
-          // TODO: ensure this is actually merging setStates
+          // if controlled via value prop, don't set state — simply pass up value
+          // responsibility moves to parent component to pass updated value prop
+          if (this.props.value && !force) {
+            this.props.onChange({ ...this.value, [name]: value })
+            // abort setState
+            return
+          }
+          // TODO: make sure sync validation merges set states.
           if (prevField.errors.length) {
             this.validateField(name, value)
           }
@@ -307,7 +307,9 @@ export default function connectForm(ComposedComponent) {
           }
         },
         () => {
-          this.props.onChange(this.value)
+          if (!this.props.value || force) {
+            this.props.onChange(this.value)
+          }
           if (prevPristine !== this.pristine) {
             if (this.pristine) {
               this.props.onPristine()
@@ -363,6 +365,7 @@ export default function connectForm(ComposedComponent) {
 
     // TODO: better name (also unwarns field)
     warnField = (name, errors, validating) => {
+      // cache prev valid computed state
       const prevValid = this.valid
       errors = errors.filter(err => err).map(err => err.message || err)
       this.setState(
@@ -422,7 +425,7 @@ export default function connectForm(ComposedComponent) {
             )
         )
       } else {
-        Promise.resolve()
+        return Promise.resolve()
       }
     }
 
@@ -541,6 +544,7 @@ export default function connectForm(ComposedComponent) {
     render() {
       // Strip out props that are handled internally.
       const {
+        value,
         initialValue,
         onSubmit,
         onSubmitSuccess,
@@ -558,7 +562,7 @@ export default function connectForm(ComposedComponent) {
         registerField,
         unregisterField,
         ...formProps
-      } = this.getChildContext() // TODO: okay to call manually?
+      } = this.getChildContext()._form
       return <ComposedComponent {...passProps} form={formProps} />
     }
   }

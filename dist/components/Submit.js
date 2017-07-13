@@ -104,6 +104,7 @@
             component = _props.component,
             passProps = _objectWithoutProperties(_props, ["render", "component"]);
 
+        console.log(passProps);
         if (typeof render === "function") {
           return render(passProps);
         } else if (component === "button") {

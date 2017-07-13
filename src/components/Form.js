@@ -21,7 +21,8 @@ class Form extends PureComponent {
     if (typeof render === "function") {
       return render(passProps)
     } else if (typeof component === "string") {
-      return React.createElement(component, passProps)
+      const { form, ...htmlProps } = passProps
+      return React.createElement(component, htmlProps)
     } else if (component) {
       return React.createElement(component, passProps)
     } else {

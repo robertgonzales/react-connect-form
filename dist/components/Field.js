@@ -102,14 +102,19 @@
         var _props = this.props,
             render = _props.render,
             component = _props.component,
-            rest = _objectWithoutProperties(_props, ["render", "component"]);
+            passProps = _objectWithoutProperties(_props, ["render", "component"]);
 
         if (typeof render === "function") {
-          return render(rest);
+          return render(passProps);
         } else if (typeof component === "string") {
-          return _react2.default.createElement(component, rest);
+          var form = passProps.form,
+              field = passProps.field,
+              htmlProps = _objectWithoutProperties(passProps, ["form", "field"]);
+
+          console.log(htmlProps);
+          return _react2.default.createElement(component, htmlProps);
         } else if (component) {
-          return _react2.default.createElement(component, rest);
+          return _react2.default.createElement(component, passProps);
         } else {
           return null;
         }

@@ -19,7 +19,8 @@ class Reset extends PureComponent {
     if (typeof render === "function") {
       return render(passProps)
     } else if (component === "button") {
-      return React.createElement(component, passProps)
+      const { form, ...htmlProps } = passProps
+      return React.createElement(component, htmlProps)
     } else if (component) {
       return React.createElement(component, passProps)
     } else {

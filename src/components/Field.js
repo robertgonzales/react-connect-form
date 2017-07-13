@@ -15,13 +15,14 @@ class Field extends PureComponent {
   }
 
   render() {
-    const { render, component, ...rest } = this.props
+    const { render, component, ...passProps } = this.props
     if (typeof render === "function") {
-      return render(rest)
+      return render(passProps)
     } else if (typeof component === "string") {
-      return React.createElement(component, rest)
+      const { form, field, ...htmlProps } = passProps
+      return React.createElement(component, htmlProps)
     } else if (component) {
-      return React.createElement(component, rest)
+      return React.createElement(component, passProps)
     } else {
       return null
     }
