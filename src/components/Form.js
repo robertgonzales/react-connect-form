@@ -9,6 +9,7 @@ class Form extends PureComponent {
     render: PropTypes.func,
     component: PropTypes.node,
     noValidate: PropTypes.bool,
+    autoComplete: PropTypes.oneOf(["on", "off"]),
   }
 
   static defaultProps = {

@@ -243,6 +243,9 @@ export default function connectForm(ComposedComponent) {
           } else if (fieldProps) {
             this.initialValue[name] = getInitialValue(prevField, fieldProps)
           }
+          const value = this.props.value
+            ? this.props.value[name]
+            : this.initialValue[name]
           return {
             fields: {
               ...prevState.fields,
@@ -252,7 +255,7 @@ export default function connectForm(ComposedComponent) {
                 pristine: true,
                 validated: true,
                 validating: false,
-                value: this.initialValue[name],
+                value: value,
               },
             },
           }
@@ -307,7 +310,7 @@ export default function connectForm(ComposedComponent) {
           }
         },
         () => {
-          if (!this.props.value || force) {
+          if (!this.props.value) {
             this.props.onChange(this.value)
           }
           if (prevPristine !== this.pristine) {
@@ -335,7 +338,7 @@ export default function connectForm(ComposedComponent) {
           }
         },
         () => {
-          this.props.onFocus()
+          this.props.onFocus(name)
         }
       )
     }
@@ -355,9 +358,13 @@ export default function connectForm(ComposedComponent) {
           }
         },
         () => {
-          if (!this.focused) {
-            this.props.onBlur()
-          }
+          // defer callstack to be sure blur wasn't just
+          // transfering focus to different field.
+          setTimeout(() => {
+            if (!this.focused) {
+              this.props.onBlur()
+            }
+          }, 0)
         }
       )
       this.validateField(name, this.state.fields[name].value)

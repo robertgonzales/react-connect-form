@@ -110,7 +110,6 @@
           var form = passProps.form,
               htmlProps = _objectWithoutProperties(passProps, ["form"]);
 
-          console.log(htmlProps);
           return _react2.default.createElement(component, htmlProps);
         } else if (component) {
           return _react2.default.createElement(component, passProps);
@@ -127,7 +126,8 @@
   Form.propTypes = {
     render: _propTypes2.default.func,
     component: _propTypes2.default.node,
-    noValidate: _propTypes2.default.bool
+    noValidate: _propTypes2.default.bool,
+    autoComplete: _propTypes2.default.oneOf(["on", "off"])
   };
   Form.defaultProps = {
     component: "form",

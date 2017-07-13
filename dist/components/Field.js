@@ -111,7 +111,6 @@
               field = passProps.field,
               htmlProps = _objectWithoutProperties(passProps, ["form", "field"]);
 
-          console.log(htmlProps);
           return _react2.default.createElement(component, htmlProps);
         } else if (component) {
           return _react2.default.createElement(component, passProps);

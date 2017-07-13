@@ -115,13 +115,14 @@ export default function connectField(ComposedComponent) {
 
     render() {
       if (!this.field) return null
-      // Strip out props that are handled internally.
+      // strip out field props that are handled internally.
       const {
         initialValue,
         initialChecked,
         validators,
         ...passProps
       } = this.props
+      // strip out private form handlers.
       const {
         unregisterField,
         registerField,

@@ -274,7 +274,7 @@
               })))
             };
           }, function () {
-            if (!_this.props.value || force) {
+            if (!_this.props.value) {
               _this.props.onChange(_this.value);
             }
             if (prevPristine !== _this.pristine) {
@@ -293,7 +293,7 @@
               })))
             };
           }, function () {
-            _this.props.onFocus();
+            _this.props.onFocus(name);
           });
         }, _this.blurField = function (name) {
           _this.setState(function (prevState) {
@@ -304,9 +304,13 @@
               })))
             };
           }, function () {
-            if (!_this.focused) {
-              _this.props.onBlur();
-            }
+            // defer callstack to be sure blur wasn't just
+            // transfering focus to different field.
+            setTimeout(function () {
+              if (!_this.focused) {
+                _this.props.onBlur();
+              }
+            }, 0);
           });
           _this.validateField(name, _this.state.fields[name].value);
         }, _this.warnField = function (name, errors, validating) {

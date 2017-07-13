@@ -104,11 +104,13 @@
             component = _props.component,
             passProps = _objectWithoutProperties(_props, ["render", "component"]);
 
-        console.log(passProps);
         if (typeof render === "function") {
           return render(passProps);
         } else if (component === "button") {
-          return _react2.default.createElement(component, passProps);
+          var form = passProps.form,
+              htmlProps = _objectWithoutProperties(passProps, ["form"]);
+
+          return _react2.default.createElement(component, htmlProps);
         } else if (component) {
           return _react2.default.createElement(component, passProps);
         } else {

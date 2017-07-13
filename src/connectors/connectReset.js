@@ -27,7 +27,7 @@ export default function connectReset(ComposedComponent) {
 
     render() {
       const {
-        // Strip out props that are handled internally.
+        // strip out form handlers that should only be used internally
         registerField,
         unregisterField,
         ...formProps

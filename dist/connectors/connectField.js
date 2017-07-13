@@ -177,7 +177,7 @@
         key: "render",
         value: function render() {
           if (!this.field) return null;
-          // Strip out props that are handled internally.
+          // strip out field props that are handled internally.
 
           var _props = this.props,
               initialValue = _props.initialValue,
