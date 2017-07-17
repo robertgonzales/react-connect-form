@@ -226,13 +226,14 @@
             } else if (fieldProps) {
               _this.initialValue[name] = (0, _utils.getInitialValue)(prevField, fieldProps);
             }
+            var value = _this.props.value ? _this.props.value[name] : _this.initialValue[name];
             return {
               fields: _extends({}, prevState.fields, _defineProperty({}, name, _extends({}, prevField, {
                 touched: false,
                 pristine: true,
                 validated: true,
                 validating: false,
-                value: _this.initialValue[name]
+                value: value
               })))
             };
           }, function () {

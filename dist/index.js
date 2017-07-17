@@ -1,20 +1,44 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports', './components', './utils'], factory);
+    define(['exports', './connectors', './components', './utils'], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require('./components'), require('./utils'));
+    factory(exports, require('./connectors'), require('./components'), require('./utils'));
   } else {
     var mod = {
       exports: {}
     };
-    factory(mod.exports, global.components, global.utils);
+    factory(mod.exports, global.connectors, global.components, global.utils);
     global.index = mod.exports;
   }
-})(this, function (exports, _components, _utils) {
+})(this, function (exports, _connectors, _components, _utils) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
+  });
+  Object.defineProperty(exports, 'connectField', {
+    enumerable: true,
+    get: function () {
+      return _connectors.connectField;
+    }
+  });
+  Object.defineProperty(exports, 'connectForm', {
+    enumerable: true,
+    get: function () {
+      return _connectors.connectForm;
+    }
+  });
+  Object.defineProperty(exports, 'connectReset', {
+    enumerable: true,
+    get: function () {
+      return _connectors.connectReset;
+    }
+  });
+  Object.defineProperty(exports, 'connectSubmit', {
+    enumerable: true,
+    get: function () {
+      return _connectors.connectSubmit;
+    }
   });
   Object.defineProperty(exports, 'Debug', {
     enumerable: true,
