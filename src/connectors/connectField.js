@@ -53,10 +53,12 @@ export default function connectField(ComposedComponent) {
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
       const nextField = nextContext._form.fields[nextProps.name]
+      const nextForm = nextContext._form
       if (!this.field) return true
       return (
         Object.keys(nextProps).some(k => nextProps[k] !== this.props[k]) ||
-        Object.keys(nextField).some(k => nextField[k] !== this.field[k])
+        Object.keys(nextField).some(k => nextField[k] !== this.field[k]) ||
+        Object.keys(nextForm).some(k => nextForm[k] !== this.context._form[k])
       )
     }
 
