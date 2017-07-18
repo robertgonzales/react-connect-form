@@ -238,7 +238,7 @@ export default function connectForm(ComposedComponent) {
       this.setState(
         prevState => {
           const prevField = prevState.fields[name]
-          if (initialValue.hasOwnProperty(name)) {
+          if (initialValue && initialValue.hasOwnProperty(name)) {
             this.initialValue[name] = initialValue[name]
           } else if (fieldProps) {
             this.initialValue[name] = getInitialValue(prevField, fieldProps)
