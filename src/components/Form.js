@@ -17,13 +17,34 @@ class Form extends PureComponent {
     noValidate: true,
   }
 
+  handleSubmit = e => {
+    // Prevent default <form> onSubmit behavior. Use <Submit> instead.
+    if (e && typeof e.preventDefault === "function") {
+      e.preventDefault()
+    }
+  }
+
   render() {
     const { render, component, ...passProps } = this.props
     if (typeof render === "function") {
       return render(passProps)
     } else if (typeof component === "string") {
-      const { form, ...htmlProps } = passProps
-      return React.createElement(component, htmlProps)
+      // Strip out invalid html props
+      const {
+        submitSuccess,
+        submitFailure,
+        submitting,
+        pristine,
+        focused,
+        touched,
+        errors,
+        valid,
+        value,
+        fields,
+        ...htmlProps
+      } = passProps
+      const onSubmit = this.handleSubmit
+      return React.createElement(component, { ...htmlProps, onSubmit })
     } else if (component) {
       return React.createElement(component, passProps)
     } else {

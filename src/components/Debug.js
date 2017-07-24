@@ -1,4 +1,5 @@
 import React, { Component, PropTypes } from "react"
+import { deepEqual } from "../utils"
 
 const getChanges = (prev, next) => {
   if (!prev) {
@@ -39,7 +40,7 @@ export default class Debug extends Component {
   static displayName = "Debug"
 
   static contextTypes = {
-    _form: PropTypes.object.isRequired,
+    _formState: PropTypes.object.isRequired,
   }
 
   static propTypes = {
@@ -53,22 +54,14 @@ export default class Debug extends Component {
     render: true,
   }
 
-  constructor(props, context) {
-    super(props, context)
-    if (!context._form) throw new Error("Debug must be inside Form")
-  }
-
   shouldComponentUpdate(nextProps, nextState, nextContext) {
-    const nextForm = nextContext._form
-    return (
-      Object.keys(nextProps).some(key => nextProps[key] !== this.props[key]) ||
-      Object.keys(nextForm).some(key => nextForm[key] !== this.form[key])
-    )
+    const nextForm = nextContext._formState
+    return !deepEqual(nextProps, this.props) || !deepEqual(nextForm, this.form)
   }
 
   componentDidUpdate(prevProps, prevState, prevContext) {
-    const { fields: prevFields, ...prevForm } = prevContext._form
-    const { fields: nextFields, ...nextForm } = this.context._form
+    const { fields: prevFields, ...prevForm } = prevContext._formState
+    const { fields: nextFields, ...nextForm } = this.context._formState
     if (this.props.log) {
       if (this.props.name) {
         console.log(getChanges(prevFields[name], nextFields[name]))
@@ -81,7 +74,7 @@ export default class Debug extends Component {
   }
 
   get form() {
-    return this.context._form
+    return this.context._formState
   }
 
   render() {

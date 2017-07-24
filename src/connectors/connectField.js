@@ -6,7 +6,8 @@ export default function connectField(ComposedComponent) {
     static displayName = `connectField(${ComposedComponent.displayName || ""})`
 
     static contextTypes = {
-      _form: PropTypes.object.isRequired,
+      _formState: PropTypes.object.isRequired,
+      _formActions: PropTypes.object.isRequired,
     }
 
     static propTypes = {
@@ -23,47 +24,48 @@ export default function connectField(ComposedComponent) {
       type: "text",
     }
 
-    constructor(props, context) {
-      super(props, context)
-      if (!context._form) {
-        throw new Error("Field must be inside Form")
-      }
-    }
-
     componentWillMount() {
-      this.context._form.registerField(this.props.name, this.props)
+      this.actions.registerField(this.props.name, this.props)
     }
 
     componentWillUnmount() {
-      this.context._form.unregisterField(this.props.name, this.props)
+      this.actions.unregisterField(this.props.name, this.props)
     }
 
     componentWillReceiveProps(nextProps) {
       if (nextProps.name !== this.props.name) {
-        this.context._form.unregisterField(this.props.name, this.props)
-        this.context._form.registerField(nextProps.name, nextProps)
+        this.actions.unregisterField(this.props.name, this.props)
+        this.actions.registerField(nextProps.name, nextProps)
       }
       if (
         !deepEqual(nextProps.initialValue, this.props.initialValue) ||
         nextProps.initialChecked !== this.props.initialChecked
       ) {
-        this.context._form.resetField(nextProps.name, nextProps)
+        this.actions.resetField(nextProps.name, nextProps)
       }
     }
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
-      const nextField = nextContext._form.fields[nextProps.name]
-      const nextForm = nextContext._form
+      const nextForm = nextContext._formState
+      const nextField = nextForm.fields[nextProps.name]
       if (!this.field) return true
       return (
-        Object.keys(nextProps).some(k => nextProps[k] !== this.props[k]) ||
-        Object.keys(nextField).some(k => nextField[k] !== this.field[k]) ||
-        Object.keys(nextForm).some(k => nextForm[k] !== this.context._form[k])
+        !deepEqual(nextProps, this.props) ||
+        !deepEqual(nextField, this.field) ||
+        !deepEqual(nextForm, this.form)
       )
     }
 
+    get actions() {
+      return this.context._formActions
+    }
+
+    get form() {
+      return this.context._formState
+    }
+
     get field() {
-      return this.context._form.fields[this.props.name]
+      return this.form.fields[this.props.name]
     }
 
     get value() {
@@ -98,48 +100,42 @@ export default function connectField(ComposedComponent) {
       if (typeof this.props.onChange === "function") {
         this.props.onChange(e)
       }
-      this.context._form.changeField(this.props.name, value)
+      this.actions.changeField(this.props.name, value)
     }
 
     handleFocus = e => {
       if (typeof this.props.onFocus === "function") {
         this.props.onFocus(e)
       }
-      this.context._form.focusField(this.props.name)
+      this.actions.focusField(this.props.name)
     }
 
     handleBlur = e => {
       if (typeof this.props.onBlur === "function") {
         this.props.onBlur(e)
       }
-      this.context._form.blurField(this.props.name)
+      this.actions.blurField(this.props.name)
     }
 
     render() {
       if (!this.field) return null
-      // strip out field props that are handled internally.
       const {
+        // strip out field props that are handled internally.
         initialValue,
         initialChecked,
         validators,
         ...passProps
       } = this.props
-      // strip out private form handlers.
-      const {
-        unregisterField,
-        registerField,
-        ...formProps
-      } = this.context._form
       return (
         <ComposedComponent
           {...passProps}
+          {...this.field}
           onChange={this.handleChange}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
           checked={this.checked}
           value={this.value}
-          field={this.field}
-          form={formProps}
+          form={this.form}
         />
       )
     }

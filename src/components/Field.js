@@ -19,7 +19,18 @@ class Field extends PureComponent {
     if (typeof render === "function") {
       return render(passProps)
     } else if (typeof component === "string") {
-      const { form, field, ...htmlProps } = passProps
+      const {
+        // Strip out invalid html props
+        form,
+        count,
+        errors,
+        touched,
+        focused,
+        pristine,
+        validated,
+        validating,
+        ...htmlProps
+      } = passProps
       return React.createElement(component, htmlProps)
     } else if (component) {
       return React.createElement(component, passProps)

@@ -28,10 +28,6 @@ export default function connectForm(ComposedComponent) {
       onInvalid: PropTypes.func,
     }
 
-    static contextTypes = {
-      _form: PropTypes.object,
-    }
-
     static defaultProps = {
       initialValue: {},
       onSubmit: value => {},
@@ -47,7 +43,8 @@ export default function connectForm(ComposedComponent) {
     }
 
     static childContextTypes = {
-      _form: PropTypes.object.isRequired,
+      _formState: PropTypes.object.isRequired,
+      _formActions: PropTypes.object.isRequired,
     }
 
     state = {
@@ -61,23 +58,25 @@ export default function connectForm(ComposedComponent) {
 
     getChildContext() {
       return {
-        _form: {
+        _formState: {
+          submitSuccess: this.state.submitSuccess,
+          submitFailure: this.state.submitFailure,
+          submitting: this.state.submitting,
+          fields: this.state.fields,
+          pristine: this.pristine,
+          focused: this.focused,
+          touched: this.touched,
+          errors: this.errors,
+          valid: this.valid,
+          value: this.value,
+        },
+        _formActions: {
           unregisterField: this.unregisterField,
           registerField: this.registerField,
           changeField: this.changeField,
           resetField: this.resetField,
           focusField: this.focusField,
           blurField: this.blurField,
-          submitting: this.state.submitting,
-          submitFailure: this.state.submitFailure,
-          submitSuccess: this.state.submitSuccess,
-          fields: this.state.fields,
-          pristine: this.pristine,
-          focused: this.focused,
-          touched: this.touched,
-          value: this.value,
-          errors: this.errors,
-          valid: this.valid,
           submit: this.submit,
           reset: this.reset,
         },
@@ -565,12 +564,8 @@ export default function connectForm(ComposedComponent) {
         onInvalid,
         ...passProps
       } = this.props
-      const {
-        registerField,
-        unregisterField,
-        ...formProps
-      } = this.getChildContext()._form
-      return <ComposedComponent {...passProps} form={formProps} />
+      const { _formState } = this.getChildContext()
+      return <ComposedComponent {...passProps} {..._formState} />
     }
   }
 }
