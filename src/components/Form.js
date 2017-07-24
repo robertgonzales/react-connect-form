@@ -7,7 +7,7 @@ class Form extends PureComponent {
 
   static propTypes = {
     render: PropTypes.func,
-    component: PropTypes.node,
+    component: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
     noValidate: PropTypes.bool,
     autoComplete: PropTypes.oneOf(["on", "off"]),
   }
@@ -29,7 +29,7 @@ class Form extends PureComponent {
     if (typeof render === "function") {
       return render(passProps)
     } else if (typeof component === "string") {
-      // Strip out invalid html props
+      // strip out invalid html props
       const {
         submitSuccess,
         submitFailure,
@@ -41,10 +41,17 @@ class Form extends PureComponent {
         valid,
         value,
         fields,
+        // extra props for <Field component={Form} />
+        // TODO: strip out elsewhere
+        nested,
+        count,
+        validated,
+        validating,
         ...htmlProps
       } = passProps
       const onSubmit = this.handleSubmit
-      return React.createElement(component, { ...htmlProps, onSubmit })
+      const element = nested ? "div" : component
+      return React.createElement(element, { ...htmlProps, onSubmit })
     } else if (component) {
       return React.createElement(component, passProps)
     } else {

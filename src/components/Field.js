@@ -7,7 +7,7 @@ class Field extends PureComponent {
 
   static propTypes = {
     render: PropTypes.func,
-    component: PropTypes.node,
+    component: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
   }
 
   static defaultProps = {
@@ -20,7 +20,7 @@ class Field extends PureComponent {
       return render(passProps)
     } else if (typeof component === "string") {
       const {
-        // Strip out invalid html props
+        // strip out invalid html props
         form,
         count,
         errors,

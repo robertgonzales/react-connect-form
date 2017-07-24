@@ -21,7 +21,6 @@ export default function connectField(ComposedComponent) {
 
     static defaultProps = {
       validators: [],
-      type: "text",
     }
 
     componentWillMount() {

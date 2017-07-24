@@ -7,7 +7,7 @@ class Submit extends PureComponent {
 
   static propTypes = {
     render: PropTypes.func,
-    component: PropTypes.node,
+    component: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
   }
 
   static defaultProps = {
@@ -29,7 +29,7 @@ class Submit extends PureComponent {
     if (typeof render === "function") {
       return render(passProps)
     } else if (component === "button") {
-      // Strip out invalid html props
+      // strip out invalid html props
       const {
         submitSuccess,
         submitFailure,

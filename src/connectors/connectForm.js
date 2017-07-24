@@ -42,6 +42,10 @@ export default function connectForm(ComposedComponent) {
       onInvalid: errors => {},
     }
 
+    static contextTypes = {
+      _formState: PropTypes.object,
+    }
+
     static childContextTypes = {
       _formState: PropTypes.object.isRequired,
       _formActions: PropTypes.object.isRequired,
@@ -548,7 +552,7 @@ export default function connectForm(ComposedComponent) {
     }
 
     render() {
-      // Strip out props that are handled internally.
+      // strip out props that are handled internally.
       const {
         value,
         initialValue,
@@ -564,8 +568,11 @@ export default function connectForm(ComposedComponent) {
         onInvalid,
         ...passProps
       } = this.props
+      const nested = !!this.context._formState
       const { _formState } = this.getChildContext()
-      return <ComposedComponent {...passProps} {..._formState} />
+      return (
+        <ComposedComponent {...passProps} {..._formState} nested={nested} />
+      )
     }
   }
 }
