@@ -1,8 +1,9 @@
 # react-connect-form
 Controlled forms for React.
 
-## Getting Started
+<!-- ## Getting Started -->
 
+## Quick Links
 - [Examples](#examples)
   - [Basic Form](#basic-form)
   - [Validation](#validation)
@@ -106,20 +107,21 @@ const EmailForm = ({ handleSubmit }) => (
 )
 ```
 
+### Conditional Fields
+### Stepped Forms
+### Nested Forms
+
 ## API
 
 ### Components
-
 #### `<Form />`
 #### `<Field />`
 #### `<Submit />`
 
 ### Connectors
-
 #### `createForm`
 #### `createField`
 #### `withForm`
 
 ### Helpers
-
 #### `validators`
