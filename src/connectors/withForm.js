@@ -1,8 +1,8 @@
 import React, { Component, PropTypes } from "react"
 
-export default function connectReset(ComposedComponent) {
+export default function withForm(ComposedComponent) {
   return class extends Component {
-    static displayName = `connectReset(${ComposedComponent.displayName || ""})`
+    static displayName = `withForm(${ComposedComponent.displayName || ""})`
 
     static contextTypes = {
       _formState: PropTypes.object.isRequired,
@@ -13,8 +13,8 @@ export default function connectReset(ComposedComponent) {
       return (
         <ComposedComponent
           {...this.props}
-          {...this.context._formState}
-          onReset={this.context._formActions.reset}
+          formState={this.context._formState}
+          formActions={this.context._formActions}
         />
       )
     }

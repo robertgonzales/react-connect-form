@@ -1,4 +1,5 @@
 import React, { Component, PropTypes } from "react"
+import { withForm } from "../connectors"
 import { deepEqual } from "../utils"
 
 const getChanges = (prev, next) => {
@@ -36,12 +37,8 @@ const getChanges = (prev, next) => {
     .join("\n")
 }
 
-export default class Debug extends Component {
+class Debug extends Component {
   static displayName = "Debug"
-
-  static contextTypes = {
-    _formState: PropTypes.object.isRequired,
-  }
 
   static propTypes = {
     name: PropTypes.string,
@@ -54,14 +51,16 @@ export default class Debug extends Component {
     render: true,
   }
 
-  shouldComponentUpdate(nextProps, nextState, nextContext) {
-    const nextForm = nextContext._formState
-    return !deepEqual(nextProps, this.props) || !deepEqual(nextForm, this.form)
+  shouldComponentUpdate(nextProps) {
+    return (
+      !deepEqual(nextProps, this.props) ||
+      !deepEqual(nextProps.formState, this.props.formState)
+    )
   }
 
-  componentDidUpdate(prevProps, prevState, prevContext) {
-    const { fields: prevFields, ...prevForm } = prevContext._formState
-    const { fields: nextFields, ...nextForm } = this.context._formState
+  componentDidUpdate(prevProps) {
+    const { fields: prevFields, ...prevForm } = prevProps.formState
+    const { fields: nextFields, ...nextForm } = this.props.formState
     if (this.props.log) {
       if (this.props.name) {
         console.log(getChanges(prevFields[name], nextFields[name]))
@@ -73,12 +72,8 @@ export default class Debug extends Component {
     }
   }
 
-  get form() {
-    return this.context._formState
-  }
-
   render() {
-    const { fields, ...rest } = this.form
+    const { fields, ...rest } = this.props.formState
     if (!this.props.render) {
       return null
     }
@@ -95,3 +90,5 @@ export default class Debug extends Component {
     )
   }
 }
+
+export default withForm(Debug)

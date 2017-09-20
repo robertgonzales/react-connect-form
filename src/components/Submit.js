@@ -1,6 +1,6 @@
 import React, { PureComponent } from "react"
 import PropTypes from "prop-types"
-import { connectSubmit } from "../connectors"
+import { withForm } from "../connectors"
 
 class Submit extends PureComponent {
   static displayName = "Submit"
@@ -21,37 +21,30 @@ class Submit extends PureComponent {
     if (typeof this.props.onClick === "function") {
       this.props.onClick(e)
     }
-    this.props.onSubmit()
+    this.props.formActions.submit()
   }
 
   render() {
-    const { render, component, ...passProps } = this.props
+    const { render, component, formState, formActions, ...rest } = this.props
+    const passProps = {
+      onReset: formActions.reset,
+      ...formState,
+      ...rest,
+    }
     if (typeof render === "function") {
       return render(passProps)
-    } else if (component === "button") {
-      // strip out invalid html props
-      const {
-        submitSuccess,
-        submitFailure,
-        submitting,
-        pristine,
-        focused,
-        touched,
-        errors,
-        valid,
-        value,
-        fields,
-        onSubmit,
-        ...htmlProps
-      } = passProps
-      const onClick = this.handleClick
-      return React.createElement(component, { ...htmlProps, onClick })
-    } else if (component) {
-      return React.createElement(component, passProps)
-    } else {
-      return null
     }
+    if (component === "button") {
+      return React.createElement(component, {
+        ...rest,
+        onClick: this.handleClick,
+      })
+    }
+    if (component) {
+      return React.createElement(component, passProps)
+    }
+    return null
   }
 }
 
-export default connectSubmit(Submit)
+export default withForm(Submit)

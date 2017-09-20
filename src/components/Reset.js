@@ -1,6 +1,6 @@
 import React, { PureComponent } from "react"
 import PropTypes from "prop-types"
-import { connectReset } from "../connectors"
+import { withForm } from "../connectors"
 
 class Reset extends PureComponent {
   static displayName = "Reset"
@@ -21,37 +21,30 @@ class Reset extends PureComponent {
     if (typeof this.props.onClick === "function") {
       this.props.onClick(e)
     }
-    this.props.onReset()
+    this.props.formActions.reset()
   }
 
   render() {
-    const { component, render, ...passProps } = this.props
+    const { component, render, formState, formActions, ...rest } = this.props
+    const passProps = {
+      onReset: formActions.reset,
+      ...formState,
+      ...rest,
+    }
     if (typeof render === "function") {
       return render(passProps)
-    } else if (component === "button") {
-      // strip out invalid html props
-      const {
-        submitSuccess,
-        submitFailure,
-        submitting,
-        pristine,
-        focused,
-        touched,
-        errors,
-        valid,
-        value,
-        fields,
-        onReset,
-        ...htmlProps
-      } = passProps
-      const onClick = this.handleClick
-      return React.createElement(component, { ...htmlProps, onClick })
-    } else if (component) {
-      return React.createElement(component, passProps)
-    } else {
-      return null
     }
+    if (component === "button") {
+      return React.createElement(component, {
+        ...rest,
+        onClick: this.handleClick,
+      })
+    }
+    if (component) {
+      return React.createElement(component, passProps)
+    }
+    return null
   }
 }
 
-export default connectReset(Reset)
+export default withForm(Reset)
