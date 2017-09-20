@@ -3,26 +3,26 @@ Controlled forms for React.
 
 ## Getting Started
 
-- [Examples]()
-  - [Basic Form]()
-  - [Validation]()
-  - [Async Validation]()
-  - [Conditional Fields]()
-  - [Stepped Forms]()
-  - [Nested Forms]()
-- [API]()
-  - [Components]()
-    - [\<Form />]()
-    - [\<Field />]()
-    - [\<Submit />]()
-    - [\<Reset />]()
-    - [\<Debug />]()
-  - [Connectors]()
-    - [createForm]()
-    - [createField]()
-    - [withForm]()
-  - [Helpers]()
-    - [validators]()
+- [Examples](#examples)
+  - [Basic Form](#basic-form)
+  - [Validation](#validation)
+  - [Async Validation](#async-validation)
+  - [Conditional Fields](#conditional-fields)
+  - [Stepped Forms](#stepped-forms)
+  - [Nested Forms](#nested-forms)
+- [API](#api)
+  - [Components](#components)
+    - [`<Form />`](#form-)
+    - [`<Field />`](#field-)
+    - [`<Submit />`](#submit-)
+    - [`<Reset />`](#reset-)
+    - [`<Debug />`](#debug-)
+  - [Connectors](#connectors)
+    - [`createForm`](#createform)
+    - [`createField`](#createField)
+    - [`withForm`](#withForm)
+  - [Helpers](#helpers)
+    - [`validators`](#validators)
 
 ## Examples
 
@@ -108,15 +108,18 @@ const EmailForm = ({ handleSubmit }) => (
 
 ## API
 
-### `<Form />`
-### `<Field />`
-### `<Submit />`
+### Components
 
-### `formState`
-### `formActions`
+#### `<Form />`
+#### `<Field />`
+#### `<Submit />`
 
-### `connectForm`
-### `connectField`
-### `withForm`
+### Connectors
 
-### `validators`
+#### `createForm`
+#### `createField`
+#### `withForm`
+
+### Helpers
+
+#### `validators`
