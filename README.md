@@ -18,10 +18,6 @@ Controlled forms for React.
     - [`<Submit />`](#submit-)
     - [`<Reset />`](#reset-)
     - [`<Debug />`](#debug-)
-  - [Connectors](#connectors)
-    - [`createForm`](#createform)
-    - [`createField`](#createField)
-    - [`withForm`](#withForm)
   - [Helpers](#helpers)
     - [`validators`](#validators)
 
@@ -117,11 +113,6 @@ const EmailForm = ({ handleSubmit }) => (
 #### `<Form />`
 #### `<Field />`
 #### `<Submit />`
-
-### Connectors
-#### `createForm`
-#### `createField`
-#### `withForm`
 
 ### Helpers
 #### `validators`

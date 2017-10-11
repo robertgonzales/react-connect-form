@@ -1,4 +1,9 @@
 {
-  "presets": ["es2015", "stage-2", "react"],
-  "plugins": ["transform-es2015-modules-umd", "transform-class-properties", "transform-export-extensions"]
+  "presets": ["es2015", "stage-0", "react"],
+  "plugins": [
+    "transform-es2015-modules-umd",
+    "transform-class-properties",
+    "transform-export-extensions",
+    "transform-runtime"
+  ]
 }

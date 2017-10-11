@@ -1,15 +1,13 @@
-import './polyfills'
-export * as validators from './validators'
-export { reflectPromise, cancelPromise } from './promises'
+export * as validators from "./validators"
 export {
   valueIsEvent,
   getEventValue,
   getNextValue,
   getInitialValue,
   getDecrementValue,
-  getValidators
-} from './values'
-export deepEqual from 'deep-equal'
+  getValidators,
+} from "./values"
+export deepEqual from "deep-equal"
 
 // async function validateField(name, value) {
 //   if (!this.shouldFieldValidate(name, value)) {

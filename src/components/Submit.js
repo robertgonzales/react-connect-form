@@ -1,9 +1,13 @@
-import React, { PureComponent } from "react"
+import React, { Component } from "react"
 import PropTypes from "prop-types"
-import { withForm } from "../connectors"
 
-class Submit extends PureComponent {
+export default class Submit extends Component {
   static displayName = "Submit"
+
+  static contextTypes = {
+    _formState: PropTypes.object.isRequired,
+    _formActions: PropTypes.object.isRequired,
+  }
 
   static propTypes = {
     render: PropTypes.func,
@@ -18,33 +22,37 @@ class Submit extends PureComponent {
     if (e && typeof e.preventDefault === "function") {
       e.preventDefault()
     }
+
     if (typeof this.props.onClick === "function") {
       this.props.onClick(e)
     }
-    this.props.formActions.submit()
+
+    this.context._formActions.submit()
   }
 
   render() {
-    const { render, component, formState, formActions, ...rest } = this.props
-    const passProps = {
-      onReset: formActions.reset,
-      ...formState,
+    const { render, component, ...rest } = this.props
+    const props = {
       ...rest,
+      ...this.context._formState,
+      onSubmit: this.context._formActions.submit,
     }
+
     if (typeof render === "function") {
-      return render(passProps)
+      return render(props)
     }
-    if (component === "button") {
+
+    if (typeof component === "function") {
+      return React.createElement(component, props)
+    }
+
+    if (typeof component === "string") {
       return React.createElement(component, {
         ...rest,
         onClick: this.handleClick,
       })
     }
-    if (component) {
-      return React.createElement(component, passProps)
-    }
+
     return null
   }
 }
-
-export default withForm(Submit)

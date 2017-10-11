@@ -1,14 +1,9 @@
 import React, { Component, PropTypes } from "react"
-import { withForm } from "../connectors"
 import { deepEqual } from "../utils"
 
 const getChanges = (prev, next) => {
-  if (!prev) {
-    return
-  }
-  if (!Object.keys(prev).length) {
-    return
-  }
+  if (!prev) return
+  if (!Object.keys(prev).length) return
   return Object.keys(prev)
     .reduce((changes, key) => {
       if (prev[key] !== next[key]) {
@@ -18,7 +13,9 @@ const getChanges = (prev, next) => {
             prev[key].some((item, index) => item !== next[key][index])
           ) {
             changes.push(
-              `\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(next[key])}`
+              `\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(
+                next[key]
+              )}`
             )
           }
         } else if (typeof prev[key] === "object") {
@@ -28,7 +25,9 @@ const getChanges = (prev, next) => {
           }
         } else {
           changes.push(
-            `\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(next[key])}`
+            `\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(
+              next[key]
+            )}`
           )
         }
       }
@@ -37,8 +36,13 @@ const getChanges = (prev, next) => {
     .join("\n")
 }
 
-class Debug extends Component {
+export default class Debug extends Component {
   static displayName = "Debug"
+
+  static contextTypes = {
+    _formState: PropTypes.object.isRequired,
+    _formActions: PropTypes.object.isRequired,
+  }
 
   static propTypes = {
     name: PropTypes.string,
@@ -51,16 +55,17 @@ class Debug extends Component {
     render: true,
   }
 
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate(nextProps, nextState, nextContext) {
     return (
-      !deepEqual(nextProps, this.props) ||
-      !deepEqual(nextProps.formState, this.props.formState)
+      !deepEqual(nextContext, this.props) ||
+      !deepEqual(nextContext._formState, this.context._formState)
     )
   }
 
-  componentDidUpdate(prevProps) {
-    const { fields: prevFields, ...prevForm } = prevProps.formState
-    const { fields: nextFields, ...nextForm } = this.props.formState
+  componentDidUpdate(prevProps, prevState, prevContext) {
+    const { fields: prevFields, ...prevForm } = prevContext._formState
+    const { fields: nextFields, ...nextForm } = this.context._formState
+
     if (this.props.log) {
       if (this.props.name) {
         console.log(getChanges(prevFields[name], nextFields[name]))
@@ -73,22 +78,24 @@ class Debug extends Component {
   }
 
   render() {
-    const { fields, ...rest } = this.props.formState
-    if (!this.props.render) {
-      return null
+    const { fields, ...rest } = this.context._formState
+
+    if (this.props.render) {
+      return (
+        <pre>
+          <code>
+            {this.props.name ? (
+              JSON.stringify(fields[name], null, 2)
+            ) : this.props.field ? (
+              JSON.stringify(fields, null, 2)
+            ) : (
+              JSON.stringify(rest, null, 2)
+            )}
+          </code>
+        </pre>
+      )
     }
-    return (
-      <pre>
-        <code>
-          {this.props.name
-            ? JSON.stringify(fields[name], null, 2)
-            : this.props.field
-                ? JSON.stringify(fields, null, 2)
-                : JSON.stringify(rest, null, 2)}
-        </code>
-      </pre>
-    )
+
+    return null
   }
 }
-
-export default withForm(Debug)
