@@ -8,6 +8,38 @@ import {
   getDecrementValue,
 } from "../utils"
 
+function isPristine(state) {
+  return Object.values(state.fields).every(field => field.pristine)
+}
+
+function isTouched(state) {
+  return Object.values(state.fields).some(field => field.touched)
+}
+
+function isValid(state) {
+  return Object.values(state.fields).every(field => field.errors.length < 1)
+}
+
+function getFocused(state) {
+  return Object.keys(state.fields).find(name => state.fields[name].focused)
+}
+
+function getValue(state) {
+  return Object.keys(state.fields).reduce((value, name) => {
+    value[name] = state.fields[name].value
+    return value
+  }, {})
+}
+
+function getErrors(state) {
+  return Object.keys(state.fields).reduce((errors, name) => {
+    if (state.fields[name].errors.length) {
+      errors[name] = state.fields[name].errors
+    }
+    return errors
+  }, {})
+}
+
 export default class Form extends Component {
   static displayName = "Form"
 
@@ -63,16 +95,16 @@ export default class Form extends Component {
   getChildContext() {
     return {
       _formState: {
-        submitSuccess: this.state.submitSuccess,
         submitFailure: this.state.submitFailure,
+        submitSuccess: this.state.submitSuccess,
         submitting: this.state.submitting,
         fields: this.state.fields,
-        pristine: this.pristine,
-        focused: this.focused,
-        touched: this.touched,
-        errors: this.errors,
-        valid: this.valid,
-        value: this.value,
+        errors: getErrors(this.state),
+        focused: isFocused(this.state),
+        pristine: isPristine(this.state),
+        touched: isTouched(this.state),
+        valid: isValid(this.state),
+        value: getValue(this.state),
       },
       _formActions: {
         unregisterField: this.unregisterField,
@@ -96,12 +128,46 @@ export default class Form extends Component {
           }
         }
       })
-    } else if (!deepEqual(nextProps.initialValue, this.props.initialValue)) {
+    }
+
+    if (!deepEqual(nextProps.initialValue, this.props.initialValue)) {
       Object.keys(nextProps.initialValue).forEach(name => {
         if (this.state.fields[name]) {
           this.resetField(name, null, nextProps.initialValue)
         }
       })
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (getValue(prevState) !== getValue(this.state)) {
+      if (!this.props.value) {
+        this.props.onChange(getValue(this.state))
+      }
+    }
+
+    if (isValid(prevState) !== isValid(this.state)) {
+      if (isValid(this.state)) {
+        this.props.onValid()
+      } else {
+        this.props.onInvalid(getErrors(this.state))
+      }
+    }
+
+    if (isFocused(prevState) !== isFocused(this.state)) {
+      if (isFocused(this.state)) {
+        this.props.onFocus(isFocused(this.state))
+      } else {
+        this.props.onBlur()
+      }
+    }
+
+    if (isPristine(prevState) !== isPristine(this.state)) {
+      if (isPristine(this.state)) {
+        this.props.onPristine()
+      } else {
+        this.props.onDirty()
+      }
     }
   }
 
@@ -121,42 +187,6 @@ export default class Form extends Component {
     } catch (err) {
       throw new Error(this._isUnmounted ? "Form is unmounted" : err)
     }
-  }
-
-  get pristine() {
-    return Object.values(this.state.fields).every(field => field.pristine)
-  }
-
-  get touched() {
-    return Object.values(this.state.fields).some(field => field.touched)
-  }
-
-  get valid() {
-    return Object.values(this.state.fields).every(
-      field => field.errors.length < 1
-    )
-  }
-
-  get focused() {
-    return Object.keys(this.state.fields).find(
-      name => this.state.fields[name].focused
-    )
-  }
-
-  get value() {
-    return Object.keys(this.state.fields).reduce((value, name) => {
-      value[name] = this.state.fields[name].value
-      return value
-    }, {})
-  }
-
-  get errors() {
-    return Object.keys(this.state.fields).reduce((errors, name) => {
-      if (this.state.fields[name].errors.length) {
-        errors[name] = this.state.fields[name].errors
-      }
-      return errors
-    }, {})
   }
 
   registerField = (name, fieldProps) => {
@@ -210,21 +240,17 @@ export default class Form extends Component {
   unregisterField = (name, fieldProps) => {
     this.setState(prevState => {
       const prevField = prevState.fields[name]
-      // multiple fields registered to the same name.
       if (prevField.count > 1) {
         return {
           fields: {
             ...prevState.fields,
             [name]: {
               ...prevField,
-              // decrement field count.
               count: prevField.count - 1,
               value: getDecrementValue(prevField, fieldProps),
-              // TODO: run validation again?
             },
           },
         }
-        // only one field registered to name.
       } else {
         delete this.validators[name]
         delete this.initialValue[name]
@@ -241,185 +267,123 @@ export default class Form extends Component {
   }
 
   resetField = (name, fieldProps, initialValue) => {
-    // cache prev computed state
-    const prevPristine = this.pristine
-    //
-    this.setState(
-      prevState => {
-        const prevField = prevState.fields[name]
-        if (initialValue && initialValue.hasOwnProperty(name)) {
-          this.initialValue[name] = initialValue[name]
-        } else if (fieldProps) {
-          this.initialValue[name] = getInitialValue(prevField, fieldProps)
-        }
-        const value = this.props.value
-          ? this.props.value[name]
-          : this.initialValue[name]
-        return {
-          fields: {
-            ...prevState.fields,
-            [name]: {
-              ...prevField,
-              touched: false,
-              pristine: true,
-              validated: true,
-              validating: false,
-              value: value,
-            },
-          },
-        }
-      },
-      () => {
-        this.props.onChange(this.value)
-        if (prevPristine !== this.pristine) {
-          if (this.pristine) {
-            this.props.onPristine()
-          } else {
-            this.props.onDirty()
-          }
-        }
+    this.setState(prevState => {
+      const prevField = prevState.fields[name]
+      if (initialValue && initialValue.hasOwnProperty(name)) {
+        this.initialValue[name] = initialValue[name]
+      } else if (fieldProps) {
+        this.initialValue[name] = getInitialValue(prevField, fieldProps)
       }
-    )
+      const value = this.props.value
+        ? this.props.value[name]
+        : this.initialValue[name]
+      return {
+        fields: {
+          ...prevState.fields,
+          [name]: {
+            ...prevField,
+            touched: false,
+            pristine: true,
+            validated: true,
+            validating: false,
+            value: value,
+          },
+        },
+      }
+    })
   }
 
   // force: only used when in controlled mode (via this.props.value).
   // forces uncontrolled behavior (setState) instead of controlled behavior (onChange only)
   changeField = (name, event, force) => {
-    // cache prev pristine computed state to compare in setState callback
-    const prevPristine = this.pristine
     // perform updates for change event
-    this.setState(
-      prevState => {
-        const prevField = prevState.fields[name]
-        // value may need to be altered before updating
-        // e.g. single checkbox value (true) vs multiple checkbox value ([1, 2])
-        const value = getNextValue(event, prevField)
-        // if controlled via value prop, don't set state — simply pass up value
-        // responsibility moves to parent component to pass updated value prop
-        if (this.props.value && !force) {
-          this.props.onChange({ ...this.value, [name]: value })
-          // abort setState
-          return
-        }
-        // TODO: make sure sync validation merges set states.
-        if (prevField.errors.length) {
-          this.validateField(name, value)
-        }
-        return {
-          fields: {
-            ...prevState.fields,
-            [name]: {
-              ...prevField,
-              value: value,
-              touched: true,
-              validated: value === prevField.value,
-              pristine: this.initialValue[name] === value,
-            },
-          },
-        }
-      },
-      () => {
-        if (!this.props.value) {
-          this.props.onChange(this.value)
-        }
-        if (prevPristine !== this.pristine) {
-          if (this.pristine) {
-            this.props.onPristine()
-          } else {
-            this.props.onDirty()
-          }
-        }
+    this.setState(prevState => {
+      const prevField = prevState.fields[name]
+      // value may need to be altered before updating
+      // e.g. single checkbox value (true) vs multiple checkbox value ([1, 2])
+      const value = getNextValue(event, prevField)
+      // if controlled via value prop, don't set state — simply pass up value
+      // responsibility moves to parent component to pass updated value prop
+      if (this.props.value && !force) {
+        this.props.onChange({ ...getValue(prevState), [name]: value })
+        // abort setState
+        return
       }
-    )
+      // TODO: make sure sync validation merges set states.
+      if (prevField.errors.length) {
+        this.validateField(name, value)
+      }
+      return {
+        fields: {
+          ...prevState.fields,
+          [name]: {
+            ...prevField,
+            value: value,
+            touched: true,
+            validated: value === prevField.value,
+            pristine: this.initialValue[name] === value,
+          },
+        },
+      }
+    })
   }
 
   focusField = name => {
-    this.setState(
-      prevState => {
-        return {
-          fields: {
-            ...prevState.fields,
-            [name]: {
-              ...prevState.fields[name],
-              focused: true,
-            },
-          },
-        }
+    this.setState(prevState => ({
+      fields: {
+        ...prevState.fields,
+        [name]: {
+          ...prevState.fields[name],
+          focused: true,
+        },
       },
-      () => {
-        this.props.onFocus(name)
-      }
-    )
+    }))
   }
 
   blurField = name => {
-    this.setState(
-      prevState => {
-        return {
-          fields: {
-            ...prevState.fields,
-            [name]: {
-              ...prevState.fields[name],
-              focused: false,
-              touched: true,
-            },
-          },
-        }
+    this.setState(prevState => ({
+      fields: {
+        ...prevState.fields,
+        [name]: {
+          ...prevState.fields[name],
+          focused: false,
+          touched: true,
+        },
       },
-      () => {
-        // defer callstack to be sure blur wasn't just
-        // transfering focus to different field.
-        setTimeout(() => {
-          if (!this.focused) {
-            this.props.onBlur()
-          }
-        }, 0)
-      }
-    )
+    }))
     this.validateField(name, this.state.fields[name].value)
   }
 
   // TODO: better name (also unwarns field)
   warnField = (name, errors, validating) => {
-    // cache prev valid computed state
-    const prevValid = this.valid
     errors = errors.filter(err => err).map(err => err.message || err)
-    this.setState(
-      prevState => {
-        return {
-          fields: {
-            ...prevState.fields,
-            [name]: {
-              ...prevState.fields[name],
-              errors: errors,
-              validating: validating,
-              validated: !errors.length && !validating,
-            },
-          },
-        }
+    this.setState(prevState => ({
+      fields: {
+        ...prevState.fields,
+        [name]: {
+          ...prevState.fields[name],
+          errors: errors,
+          validating: validating,
+          validated: !errors.length && !validating,
+        },
       },
-      () => {
-        if (prevValid !== this.valid) {
-          if (this.valid) {
-            this.props.onValid()
-          } else {
-            this.props.onInvalid(this.errors)
-          }
-        }
-      }
-    )
+    }))
   }
 
   validateField = async (name, value) => {
-    if (!this.shouldFieldValidate(name, value)) return
-    const { syncErrors, asyncErrors } = this.runFieldValidations(name, value)
+    const { validated, pristine } = this.state.fields[name]
+    if (!pristine && validated) return
+
+    const { syncErrors, asyncErrors } = this.getValidatorResults(name, value)
     const hasAsync = asyncErrors.length > 0
     // if no syncErrors, this will clear errors
     this.warnField(name, syncErrors, hasAsync)
+
     if (hasAsync) {
       // update field after first error resolves.
       const error = await this.cancelOnUnmount(Promise.race(asyncErrors))
       await this.warnField(name, [error, ...syncErrors], true)
+
       if (asyncErrors.length > 1) {
         // update field after all errors resolve.
         const errors = await this.cancelOnUnmount(Promise.all(asyncErrors))
@@ -428,16 +392,10 @@ export default class Form extends Component {
     }
   }
 
-  shouldFieldValidate = (name, nextValue) => {
-    const { validated, pristine } = this.state.fields[name]
-    if (!pristine && validated) return false
-    return true
-  }
-
-  runFieldValidations = (name, value) => {
+  getValidatorResults = (name, value) => {
     return this.validators[name].reduce(
       (errors, validator) => {
-        let err = validator(value, this.value)
+        let err = validator(value, getValue(this.state))
         if (!err) {
           return errors
         } else if (typeof err === "string" || err instanceof Error) {
@@ -456,16 +414,16 @@ export default class Form extends Component {
   }
 
   validateAllFields = async () => {
-    await Promise.all(
-      Object.keys(this.state.fields).map(async name => {
-        return await this.validateField(name, this.state.fields[name])
-      })
+    return await Promise.all(
+      Object.keys(this.state.fields).map(
+        async name => await this.validateField(name, this.state.fields[name])
+      )
     )
   }
 
   handleSubmission = async () => {
-    if (this.valid) {
-      const submission = this.props.onSubmit(this.value)
+    if (isValid(this.state)) {
+      const submission = this.props.onSubmit(getValue(this.state))
       await this.cancelOnUnmount(Promise.resolve(submission))
       this.setState(prevState => ({
         submitting: true,

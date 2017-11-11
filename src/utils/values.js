@@ -1,8 +1,4 @@
-import { isRequired } from './validators'
-
-export const valueIsEvent = e => {
-  return !!(e && e.stopPropagation && e.preventDefault)
-}
+import { isRequired } from "./validators"
 
 const getCheckboxValue = (propValue, formField) => {
   if (formField.count > 1) {
@@ -20,14 +16,14 @@ const getCheckboxValue = (propValue, formField) => {
 }
 
 export const getNextValue = (eventValue, formField = {}) => {
-  if (formField.type === 'checkbox') {
+  if (formField.type === "checkbox") {
     return getCheckboxValue(eventValue, formField)
   }
   return eventValue
 }
 
 export const getDecrementValue = (formField, fieldProps) => {
-  if (formField.type === 'checkbox') {
+  if (formField.type === "checkbox") {
     const fieldValue = [...formField.value]
     const index = fieldValue.indexOf(fieldProps.value)
     if (index > -1) {
@@ -35,35 +31,41 @@ export const getDecrementValue = (formField, fieldProps) => {
       return fieldValue
     }
   }
-  if (formField.type === 'radio') {
+
+  if (formField.type === "radio") {
     if (formField.value === fieldProps.value) {
       return undefined
     }
   }
+
   return formField.value
 }
 
 export const getEventValue = (event, fieldProps) => {
   const { type, value, multiple } = fieldProps
-  if (valueIsEvent(event)) {
-    if (type === 'radio' || type === 'checkbox') {
+
+  if (event && event.stopPropagation && event.preventDefault) {
+    if (type === "radio" || type === "checkbox") {
       if (value === undefined) {
         return !!event.target.checked
       }
       return value
-    } else if (event.target.options && multiple) {
-      return [...event.target.options].filter(o => o.selected).map(o => o.value)
-    } else {
-      return event.target.value
     }
+
+    if (event.target.options && multiple) {
+      return [...event.target.options].filter(o => o.selected).map(o => o.value)
+    }
+
+    return event.target.value
   }
+
   return event
 }
 
 export const getInitialValue = (formField = {}, fieldProps) => {
   const { type, value, initialChecked, initialValue } = fieldProps
   const { count, value: prevValue } = formField
-  if (type === 'checkbox') {
+  if (type === "checkbox") {
     // checkbox already exists, so initial value must be for multiple checkboxes.
     // need to convert to array of values
     if (count >= 1) {
@@ -87,7 +89,7 @@ export const getInitialValue = (formField = {}, fieldProps) => {
       return initialChecked ? value : undefined
     }
   }
-  if (type === 'radio') {
+  if (type === "radio") {
     return initialChecked ? value : prevValue
   }
   return initialValue
