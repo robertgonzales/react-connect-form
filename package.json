@@ -1,6 +1,6 @@
 {
   "name": "react-connect-form",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Declarative React Forms",
   "repository": {
     "type": "git",
@@ -45,12 +45,12 @@
   },
   "peerDependencies": {
     "react": "^15",
-    "react-dom": "^15"
+    "react-dom": "^15",
+    "prop-types": "^15"
   },
   "dependencies": {
     "deep-equal": "^1.0.1",
     "object-assign": "^4.1.1",
-    "object.values": "^1.0.4",
-    "prop-types": "^15.5.10"
+    "object.values": "^1.0.4"
   }
 }

@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from "react"
+import React, { Component } from "react"
+import PropTypes from "prop-types"
 import { withForm } from "../connectors"
 import { deepEqual } from "../utils"
 
@@ -18,7 +19,9 @@ const getChanges = (prev, next) => {
             prev[key].some((item, index) => item !== next[key][index])
           ) {
             changes.push(
-              `\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(next[key])}`
+              `\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(
+                next[key]
+              )}`
             )
           }
         } else if (typeof prev[key] === "object") {
@@ -28,7 +31,9 @@ const getChanges = (prev, next) => {
           }
         } else {
           changes.push(
-            `\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(next[key])}`
+            `\t${key}: ${JSON.stringify(prev[key])} => ${JSON.stringify(
+              next[key]
+            )}`
           )
         }
       }
@@ -80,11 +85,13 @@ class Debug extends Component {
     return (
       <pre>
         <code>
-          {this.props.name
-            ? JSON.stringify(fields[name], null, 2)
-            : this.props.field
-                ? JSON.stringify(fields, null, 2)
-                : JSON.stringify(rest, null, 2)}
+          {this.props.name ? (
+            JSON.stringify(fields[name], null, 2)
+          ) : this.props.field ? (
+            JSON.stringify(fields, null, 2)
+          ) : (
+            JSON.stringify(rest, null, 2)
+          )}
         </code>
       </pre>
     )
