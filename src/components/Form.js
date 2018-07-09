@@ -26,8 +26,9 @@ class Form extends PureComponent {
 
   render() {
     const { render, component, ...passProps } = this.props
+    const onSubmit = this.handleSubmit
     if (typeof render === "function") {
-      return render(passProps)
+      return render({ ...passProps, onSubmit })
     } else if (typeof component === "string") {
       // strip out invalid html props
       const {
@@ -49,7 +50,6 @@ class Form extends PureComponent {
         validating,
         ...htmlProps
       } = passProps
-      const onSubmit = this.handleSubmit
       const element = nested ? "div" : component
       return React.createElement(element, { ...htmlProps, onSubmit })
     } else if (component) {
