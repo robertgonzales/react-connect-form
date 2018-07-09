@@ -27,7 +27,7 @@ class Submit extends PureComponent {
   render() {
     const { render, component, formState, formActions, ...rest } = this.props
     const passProps = {
-      onReset: formActions.reset,
+      onSubmit: formActions.submit,
       ...formState,
       ...rest,
     }
